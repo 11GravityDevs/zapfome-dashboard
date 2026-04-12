@@ -1,4 +1,5 @@
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
@@ -10,12 +11,14 @@ export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, leadingIcon, trailingIcon, className, id, disabled, ...rest },
+  { label, hint, error, leadingIcon, trailingIcon, className, id, disabled, type, ...rest },
   ref,
 ) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const hasError = Boolean(error);
+  const isPassword = type === "password";
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -38,6 +41,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           ref={ref}
           id={inputId}
           disabled={disabled}
+          type={isPassword && showPassword ? "text" : type}
           aria-invalid={hasError || undefined}
           aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
           className={cn(
@@ -47,6 +51,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           )}
           {...rest}
         />
+        {isPassword && (
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => setShowPassword((v) => !v)}
+            className="shrink-0 text-font-secondary hover:text-font-primary transition-colors cursor-pointer"
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        )}
         {trailingIcon && <span className="text-font-secondary shrink-0">{trailingIcon}</span>}
       </div>
 

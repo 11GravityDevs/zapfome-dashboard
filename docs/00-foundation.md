@@ -23,7 +23,7 @@ Create `.env.local` (never committed):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<anon-key>
 ```
 
 The anon key is safe to expose — RLS policies protect data.
