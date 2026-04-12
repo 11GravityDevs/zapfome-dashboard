@@ -14,7 +14,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-2 font-semibold transition-colors duration-150 " +
+  "inline-flex items-center cursor-pointer justify-center gap-2 font-semibold transition-colors duration-150 " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary " +
   "disabled:cursor-not-allowed disabled:bg-dark-200 disabled:text-dark-400 disabled:border-transparent";
 

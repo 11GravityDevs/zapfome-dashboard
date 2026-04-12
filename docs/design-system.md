@@ -261,6 +261,29 @@ Each spec lists the tokens that compose the component. Build new variants by com
 - Thumb: 14×14, white, soft shadow, 2px inset.
 - Use for availability (on/off) on menu items, "Bot ativo", "Fechado" per day. Always large enough to tap.
 
+### Toast
+Floating notification for backend/submit feedback. Appears top-right, stacked downward.
+
+- **Container:** fixed top-right, `right: --spacing-lg` (24), `top: --spacing-lg` (24), `z-index: 60`, max-width 420px, min-width 320px.
+- **Panel:** fill variant 500 (solid), no border, radius `--radius-lg` (12), padding `--spacing-md` (16), Soft shadow. All text and icons are `--font-white`.
+- **Layout:** horizontal row, vertically centered (`items-center`): 20px Lucide icon (shrink-0) + text column + close button (X, 16px).
+- **Text:** title 14/600 `--font-white`. Optional description 12/400 `--font-white` at 90% opacity, gap `--spacing-2xs` (2) below title.
+- **Close button:** X icon 16px, `--font-white` at 70% opacity, hover full `--font-white`. Touch target 32×32.
+- **Animation:** slide in from right (translateX 100% → 0) + fade in (opacity 0 → 1), 200ms ease-out. Dismiss: fade out (opacity → 0), 150ms ease-in.
+- **Auto-dismiss:** 5000ms default. Error variant: 7000ms. Pause timer on hover.
+- **Stacking:** gap `--spacing-sm` (8) between toasts, max 3 visible. Oldest evicted when exceeding max.
+- **Variants:**
+
+| Variant | Background | Text / Icon | Lucide icon |
+|---|---|---|---|
+| `error` | `--error-500` | `--font-white` | `CircleAlert` |
+| `success` | `--success-500` | `--font-white` | `CircleCheck` |
+| `warning` | `--warning-500` | `--font-white` | `TriangleAlert` |
+| `info` | `--info-500` | `--font-white` | `Info` |
+
+- **Accessibility:** `role="alert"` + `aria-live="assertive"` for error/warning. `aria-live="polite"` for success/info. Close button `aria-label="Fechar"`.
+- **Usage pattern:** inline input errors for field validation; toasts for backend/submit errors (POST, UPDATE, DELETE failures).
+
 ### Sidebar (Navigation)
 - Fill `--bg-sidebar`, item gap 4, item padding `12 16`.
 - Icon (Lucide, 20) + label 14/500, color `--font-sidebar`.

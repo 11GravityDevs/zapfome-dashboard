@@ -5,18 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Logo } from "@/components/logo";
+import { useToast } from "@/contexts/toast-context";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -27,14 +27,14 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        setError("E-mail ou senha incorretos.");
+        showToast({ variant: "error", title: "E-mail ou senha incorretos." });
         return;
       }
 
       router.push("/");
       router.refresh();
     } catch {
-      setError("Não foi possível conectar. Tente novamente.");
+      showToast({ variant: "error", title: "Não foi possível conectar. Tente novamente." });
     } finally {
       setLoading(false);
     }
@@ -69,12 +69,6 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
             />
-
-            {error && (
-              <p role="alert" className="text-center text-xs font-medium text-accent-red">
-                {error}
-              </p>
-            )}
 
             <Button
               type="submit"
