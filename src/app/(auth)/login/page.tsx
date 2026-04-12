@@ -1,7 +1,7 @@
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-6">
-      <div className="w-full max-w-md rounded-xl border border-border bg-bg-card p-10 text-center shadow-card">
+      <div className="w-full max-w-md rounded-xl border border-border bg-bg-card p-12 text-center shadow-card">
         <span className="inline-block text-xl font-extrabold tracking-tight">
           <span className="text-font-primary">Zap</span>
           <span className="text-brand-primary">Fome</span>

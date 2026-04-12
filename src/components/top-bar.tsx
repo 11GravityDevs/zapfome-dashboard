@@ -1,4 +1,6 @@
 import type { Tenant } from "@/lib/types/database";
+import { cn } from "@/lib/cn";
+import { Badge } from "./badge";
 
 export function TopBar({ tenant }: { tenant: Tenant }) {
   const initials = tenant.name
@@ -15,19 +17,16 @@ export function TopBar({ tenant }: { tenant: Tenant }) {
       <span className="text-base font-semibold text-font-primary truncate">{tenant.name}</span>
 
       <div className="flex items-center gap-4">
-        <span
-          className={
-            botActive
-              ? "inline-flex items-center gap-2 rounded-full bg-accent-green-light px-3 py-1 text-xs font-semibold text-accent-green"
-              : "inline-flex items-center gap-2 rounded-full bg-bg-secondary px-3 py-1 text-xs font-semibold text-font-secondary"
-          }
-        >
+        <Badge variant={botActive ? "green" : "neutral"} className="gap-2 px-3 py-1">
           <span
             aria-hidden="true"
-            className={`inline-block size-2 rounded-full ${botActive ? "bg-accent-green" : "bg-font-secondary"}`}
+            className={cn(
+              "inline-block size-2 rounded-full",
+              botActive ? "bg-accent-green" : "bg-font-secondary",
+            )}
           />
           {botActive ? "Bot ativo" : "Bot inativo"}
-        </span>
+        </Badge>
 
         <span
           aria-label={`Usuário do ${tenant.name}`}

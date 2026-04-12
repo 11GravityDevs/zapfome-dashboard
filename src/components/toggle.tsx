@@ -32,7 +32,7 @@ export function Toggle({ checked, onCheckedChange, disabled, label, id, classNam
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none inline-block size-[14px] rounded-full bg-white shadow-soft transition-transform duration-150",
+          "pointer-events-none inline-block size-[14px] rounded-full bg-font-white shadow-soft transition-transform duration-150",
           checked ? "translate-x-[16px]" : "translate-x-[2px]",
         )}
       />
