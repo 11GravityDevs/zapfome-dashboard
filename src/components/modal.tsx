@@ -1,0 +1,90 @@
+"use client";
+
+import { useEffect, type ReactNode } from "react";
+import { X } from "lucide-react";
+import { cn } from "@/lib/cn";
+
+export type ModalProps = {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  footer?: ReactNode;
+  size?: "sm" | "md" | "lg";
+  dismissOnOverlayClick?: boolean;
+  children?: ReactNode;
+};
+
+const sizeClasses = {
+  sm: "max-w-md",
+  md: "max-w-xl",
+  lg: "max-w-3xl",
+} as const;
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  footer,
+  size = "md",
+  dismissOnOverlayClick = true,
+  children,
+}: ModalProps) {
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-(--bg-modal-overlay)"
+        onClick={dismissOnOverlayClick ? onClose : undefined}
+      />
+
+      <div
+        className={cn(
+          "relative z-10 w-full rounded-xl bg-bg-card shadow-card",
+          "flex max-h-[calc(100vh-4rem)] flex-col overflow-hidden",
+          sizeClasses[size],
+        )}
+      >
+        <header className="flex items-start justify-between gap-4 border-b border-border px-8 py-6">
+          <h2 className="text-lg font-semibold text-font-primary">{title}</h2>
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={onClose}
+            autoFocus
+            className="-m-2 rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover"
+          >
+            <X size={24} />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-8 py-6">{children}</div>
+
+        {footer && (
+          <footer className="flex items-center justify-end gap-3 border-t border-border px-8 py-4">
+            {footer}
+          </footer>
+        )}
+      </div>
+    </div>
+  );
+}
