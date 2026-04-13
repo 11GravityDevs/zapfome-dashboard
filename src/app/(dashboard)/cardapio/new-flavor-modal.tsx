@@ -27,6 +27,7 @@ export function NewFlavorModal({
     setName("");
     setError("");
   }
+
   if (!open && prevOpen) {
     setPrevOpen(false);
   }

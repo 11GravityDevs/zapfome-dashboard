@@ -276,13 +276,16 @@ export default function CardapioPage() {
   if (loading) {
     return (
       <div className="flex h-full flex-col gap-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="w-80">
-            <Input placeholder="Buscar um item..." disabled leadingIcon={<Search size={16} />} />
-          </div>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-font-primary">Cardápio</h1>
           <Button leadingIcon={<Plus size={16} />} disabled>
             Novo item
           </Button>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="w-80">
+            <Input placeholder="Buscar um item..." disabled leadingIcon={<Search size={16} />} />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <Spinner size="lg" />
@@ -293,7 +296,14 @@ export default function CardapioPage() {
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-font-primary">Cardápio</h1>
+        <Button leadingIcon={<Plus size={16} />} onClick={openCreateModal}>
+          Novo item
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-4">
         <div className="w-80">
           <Input
             placeholder="Buscar um item..."
@@ -302,9 +312,6 @@ export default function CardapioPage() {
             leadingIcon={<Search size={16} />}
           />
         </div>
-        <Button leadingIcon={<Plus size={16} />} onClick={openCreateModal}>
-          Novo item
-        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
