@@ -38,7 +38,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <div className="min-h-screen bg-bg-secondary">
         <Sidebar />
         <div className="ml-60 flex min-h-screen flex-col">
-          <TopBar tenant={tenant} />
+          <TopBar />
           <main className="flex min-h-0 flex-1 flex-col px-8 py-6">{children}</main>
         </div>
       </div>

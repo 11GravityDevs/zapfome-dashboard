@@ -5,7 +5,7 @@ import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useToast, type Toast, type ToastVariant } from "@/contexts/toast-context";
 
-const DEFAULT_DURATION = 5000;
+const DEFAULT_DURATION = 4000;
 const ERROR_DURATION = 7000;
 
 const variantConfig: Record<

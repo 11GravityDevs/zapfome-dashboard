@@ -7,31 +7,39 @@ import { Modal } from "@/components/modal";
 import { cn } from "@/lib/cn";
 import { PAUSE_DURATION_OPTIONS } from "@/lib/constants/orders";
 
+type PauseDuration = number | "indefinite" | "custom";
+
 type PauseModalProps = {
   open: boolean;
   onClose: () => void;
-  onConfirm: (minutes: number) => void;
+  onConfirm: (minutes: number | "indefinite") => void;
   loading?: boolean;
 };
 
 export function PauseModal({ open, onClose, onConfirm, loading }: PauseModalProps) {
-  const [selected, setSelected] = useState<number | "custom">(15);
+  const [selected, setSelected] = useState<PauseDuration>(15);
   const [customMinutes, setCustomMinutes] = useState("");
 
   function handleConfirm() {
+    if (selected === "indefinite") {
+      onConfirm("indefinite");
+      return;
+    }
     const minutes = selected === "custom" ? parseInt(customMinutes, 10) : selected;
     if (!minutes || minutes <= 0) return;
     onConfirm(minutes);
   }
 
-  const isValid = selected === "custom" ? parseInt(customMinutes, 10) > 0 : true;
+  const isValid =
+    selected === "indefinite" ||
+    (selected === "custom" ? parseInt(customMinutes, 10) > 0 : true);
 
   return (
     <Modal
       open={open}
       onClose={onClose}
       title="Pausar recebimento de pedidos"
-      size="sm"
+      size="md"
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>
@@ -43,17 +51,17 @@ export function PauseModal({ open, onClose, onConfirm, loading }: PauseModalProp
             disabled={!isValid || loading}
             loading={loading}
           >
-            Pausar pedidos
+            Pausar
           </Button>
         </>
       }
     >
-      <div className="flex flex-col gap-(--spacing-md)">
+      <div className="flex flex-col gap-(--spacing-lg)">
         <p className="text-sm text-font-secondary">
           Determine por quanto tempo deseja pausar o recebimento de novos pedidos pelo WhatsApp.
         </p>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {PAUSE_DURATION_OPTIONS.map((option) => (
             <button
               key={option.value}

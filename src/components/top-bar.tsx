@@ -1,26 +1,135 @@
-import type { Tenant } from "@/lib/types/database";
-import { cn } from "@/lib/cn";
-import { Badge } from "./badge";
+"use client";
 
-export function TopBar({ tenant }: { tenant: Tenant }) {
-  const botActive = tenant.is_active && !tenant.paused_until;
+import { useState } from "react";
+import { Pause, Play } from "lucide-react";
+import { Button } from "./button";
+import { Badge } from "./badge";
+import { cn } from "@/lib/cn";
+import { useTenant } from "@/contexts/tenant-context";
+import { useToast } from "@/contexts/toast-context";
+import { createClient } from "@/lib/supabase/client";
+import { PauseModal } from "@/app/(dashboard)/pedidos/pause-modal";
+import { ActivateModal } from "@/app/(dashboard)/pedidos/activate-modal";
+
+const FAR_FUTURE = "2099-12-31T23:59:59Z";
+
+export function TopBar() {
+  const { tenant, tenantId } = useTenant();
+  const { showToast } = useToast();
+
+  const [pausedUntil, setPausedUntil] = useState(tenant.paused_until);
+  const [pauseModalOpen, setPauseModalOpen] = useState(false);
+  const [activateModalOpen, setActivateModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const paused = !!pausedUntil;
+
+  const botActive = tenant.is_active && !paused;
+
+  async function handlePause(minutes: number | "indefinite") {
+    setLoading(true);
+    const newPausedUntil =
+      minutes === "indefinite"
+        ? FAR_FUTURE
+        : new Date(Date.now() + minutes * 60 * 1000).toISOString();
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("tenant")
+      .update({ paused_until: newPausedUntil })
+      .eq("id", tenantId);
+
+    setLoading(false);
+
+    if (error) {
+      showToast({ variant: "error", title: "Erro ao pausar o bot." });
+      return;
+    }
+
+    const message =
+      minutes === "indefinite"
+        ? "Bot pausado até você reativar."
+        : `Bot pausado por ${minutes} minutos.`;
+    showToast({ variant: "success", title: message });
+    setPausedUntil(newPausedUntil);
+    setPauseModalOpen(false);
+  }
+
+  async function handleActivate() {
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("tenant")
+      .update({ paused_until: null })
+      .eq("id", tenantId);
+
+    setLoading(false);
+
+    if (error) {
+      showToast({ variant: "error", title: "Erro ao ativar o bot." });
+      return;
+    }
+
+    showToast({ variant: "success", title: "Bot ativado com sucesso." });
+    setPausedUntil(null);
+    setActivateModalOpen(false);
+  }
 
   return (
-    <header className="sticky shadow-soft top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-bg-card px-8">
-      <span className="text-lg font-bold text-font-primary truncate">{tenant.name}</span>
+    <>
+      <header className="sticky shadow-soft top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-bg-card px-8">
+        <span className="text-lg font-bold text-font-primary truncate">{tenant.name}</span>
 
-      <div className="flex items-center gap-4">
-        <Badge variant={botActive ? "green" : "neutral"} className="gap-2 px-3 py-1">
-          <span
-            aria-hidden="true"
-            className={cn(
-              "inline-block size-2 rounded-full",
-              botActive ? "bg-accent-green" : "bg-font-secondary",
-            )}
-          />
-          {botActive ? "Bot ativo" : "Bot inativo"}
-        </Badge>
-      </div>
-    </header>
+        <div className="flex items-center gap-4">
+          {paused ? (
+            <Button
+              variant="green"
+              size="sm"
+              leadingIcon={<Play size={16} />}
+              onClick={() => setActivateModalOpen(true)}
+              loading={loading}
+            >
+              Ativar bot
+            </Button>
+          ) : (
+            <Button
+              variant="red"
+              size="sm"
+              leadingIcon={<Pause size={16} />}
+              onClick={() => setPauseModalOpen(true)}
+              loading={loading}
+            >
+              Pausar bot
+            </Button>
+          )}
+
+          <Badge variant={botActive ? "green" : "neutral"} className="gap-2 px-3 py-1">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "inline-block size-2 rounded-full",
+                botActive ? "bg-accent-green" : "bg-font-secondary",
+              )}
+            />
+            {botActive ? "Bot ativo" : "Bot inativo"}
+          </Badge>
+        </div>
+      </header>
+
+      <PauseModal
+        open={pauseModalOpen}
+        onClose={() => setPauseModalOpen(false)}
+        onConfirm={handlePause}
+        loading={loading}
+      />
+
+      <ActivateModal
+        open={activateModalOpen}
+        onClose={() => setActivateModalOpen(false)}
+        onConfirm={handleActivate}
+        loading={loading}
+        pausedUntil={pausedUntil}
+      />
+    </>
   );
 }

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause } from "lucide-react";
-import { Button } from "@/components/button";
 import { Spinner } from "@/components/spinner";
 import { KANBAN_COLUMNS, ORDERS_POLL_INTERVAL_MS } from "@/lib/constants/orders";
 import { useTenant } from "@/contexts/tenant-context";
@@ -12,7 +10,6 @@ import { createClient } from "@/lib/supabase/client";
 import { groupOrdersByColumn, getTodayStart, type KanbanOrder } from "@/lib/utils/orders";
 import { KanbanColumn } from "./kanban-column";
 import { OrderDetailModal } from "./order-detail-modal";
-import { PauseModal } from "./pause-modal";
 
 export default function PedidosPage() {
   const { tenantId } = useTenant();
@@ -21,8 +18,6 @@ export default function PedidosPage() {
   const [orders, setOrders] = useState<KanbanOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [pauseModalOpen, setPauseModalOpen] = useState(false);
-  const [pauseLoading, setPauseLoading] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const fetchIdRef = useRef(0);
@@ -118,31 +113,10 @@ export default function PedidosPage() {
 
   const grouped = groupOrdersByColumn(orders);
 
-  async function handlePause(minutes: number) {
-    setPauseLoading(true);
-    const pausedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
-    const supabase = createClient();
-
-    const { error } = await supabase
-      .from("tenant")
-      .update({ paused_until: pausedUntil })
-      .eq("id", tenantId);
-
-    setPauseLoading(false);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao pausar pedidos." });
-      return;
-    }
-
-    showToast({ variant: "success", title: `Pedidos pausados por ${minutes} minutos.` });
-    setPauseModalOpen(false);
-  }
-
   if (loading) {
     return (
       <div className="flex h-full flex-col gap-6">
-        <PageHeader lastUpdated={null} onPauseClick={() => setPauseModalOpen(true)} />
+        <PageHeader lastUpdated={null} />
         <div className="flex flex-1 h-full items-center justify-center">
           <Spinner size="lg" />
         </div>
@@ -152,7 +126,7 @@ export default function PedidosPage() {
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <PageHeader lastUpdated={lastUpdated} onPauseClick={() => setPauseModalOpen(true)} />
+      <PageHeader lastUpdated={lastUpdated} />
 
       {orders.length === 0 ? (
         <div className="flex flex-1 items-center justify-center py-20">
@@ -193,41 +167,19 @@ export default function PedidosPage() {
         onOrderUpdated={() => refetchRef.current()}
       />
 
-      <PauseModal
-        open={pauseModalOpen}
-        onClose={() => setPauseModalOpen(false)}
-        onConfirm={handlePause}
-        loading={pauseLoading}
-      />
     </div>
   );
 }
 
-function PageHeader({
-  lastUpdated,
-  onPauseClick,
-}: {
-  lastUpdated: Date | null;
-  onPauseClick: () => void;
-}) {
+function PageHeader({ lastUpdated }: { lastUpdated: Date | null }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold text-font-primary">Pedidos</h1>
-        {lastUpdated && (
-          <span className="text-xs text-font-secondary">
-            Última atualização: {formatTime(lastUpdated)}
-          </span>
-        )}
-      </div>
-      <Button
-        variant="red"
-        size="md"
-        leadingIcon={<Pause size={16} />}
-        onClick={onPauseClick}
-      >
-        Pausar pedidos
-      </Button>
+    <div className="flex items-center gap-3">
+      <h1 className="text-xl font-bold text-font-primary">Pedidos</h1>
+      {lastUpdated && (
+        <span className="text-xs text-font-secondary">
+          Última atualização: {formatTime(lastUpdated)}
+        </span>
+      )}
     </div>
   );
 }

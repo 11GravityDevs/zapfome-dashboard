@@ -66,7 +66,8 @@ export const PAUSE_DURATION_OPTIONS = [
   { label: "15 min", value: 15 },
   { label: "30 min", value: 30 },
   { label: "1 hora", value: 60 },
-] as const;
+  { label: "Até reativar", value: "indefinite" },
+] as const satisfies readonly { label: string; value: number | "indefinite" }[];
 
 export const ORDERS_POLL_INTERVAL_MS = 15_000;
 
