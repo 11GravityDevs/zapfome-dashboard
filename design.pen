@@ -375,9 +375,75 @@
               ]
             },
             {
+              "type": "frame",
               "id": "zjaHa",
-              "type": "ref",
-              "ref": "JZshX"
+              "name": "w1",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "5hJzv",
+                  "name": "i1",
+                  "width": 256,
+                  "height": 256,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 180,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#F97316FF",
+                        "position": 0
+                      },
+                      {
+                        "color": "#EA580CFF",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 58,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "CJf8X",
+                      "x": 40,
+                      "y": 55,
+                      "name": "bubble",
+                      "geometry": "M48 0c-26.5 0-48 18.6-48 41.5 0 13.2 7.2 25 18.4 32.8l-6.4 15.7 20.5-12.2c4.9 1.4 10.1 2.2 15.5 2.2 26.5 0 48-18.6 48-41.5s-21.5-38.5-48-38.5z",
+                      "fill": "#FFFFFFFF",
+                      "width": 175,
+                      "height": 164
+                    },
+                    {
+                      "type": "path",
+                      "id": "skyz6",
+                      "x": 84,
+                      "y": 94,
+                      "name": "burger",
+                      "geometry": "M28 0c-15.5 0-28 5.4-28 12 0 1.5 0.5 3 1.5 4.3h53c1-1.3 1.5-2.8 1.5-4.3 0-6.6-12.5-12-28-12z m-28 20h56v4h-56z m2 8h52c0 0 2 4 2 8 0 4-2 8-2 8h-54s-2-4-2-8c0-4 2-8 2-8z",
+                      "fill": "$--brand-primary",
+                      "width": 88,
+                      "height": 70
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "CyxnP",
+                  "fill": "$--font-secondary",
+                  "content": "256x256",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
             }
           ]
         }

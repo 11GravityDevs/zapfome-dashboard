@@ -82,6 +82,8 @@ All colors are exposed as CSS custom properties using the names below. Hex value
 | `--accent-blue-light` | `#EFF6FF` | Tinted background for blue badges |
 | `--accent-orange` | `#F97316` | Em preparo, Aguardando ação |
 | `--accent-orange-light` | `#FFF7ED` | Tinted background for orange badges |
+| `--accent-yellow` | `#EAB308` | Saiu p/ entrega, delivery status |
+| `--accent-yellow-light` | `#FEFCE8` | Tinted background for yellow badges |
 | `--accent-red` | `#EF4444` | Cancelar, erro, destructive |
 | `--accent-red-light` | `#FEF2F2` | Tinted background for red badges |
 
@@ -193,9 +195,12 @@ Each spec lists the tokens that compose the component. Build new variants by com
 
 ### Button
 - **Primary.** Fill `--brand-primary`, text `--font-white` 16/600, radius `--radius-md`, padding `12 16`, height ≥ 40. Hover `--brand-primary-dark`. Disabled: `--dark-200` fill, `--dark-400` text.
-- **Secondary outline.** Fill transparent, 1px stroke `--border`, text `--font-primary` 16/600, same radius/padding. Hover bg `--bg-hover`.
-- **Destructive outline.** 1px stroke `--accent-red`, text `--accent-red`. Hover bg `--accent-red-light`.
-- **Success (Aceitar pedido).** Fill `--success-500`, text `--font-white`. Hover `--success-600`.
+- **Secondary.** Fill transparent, 1px stroke `--border`, text `--font-primary` 16/600, same radius/padding. Hover bg `--bg-hover`.
+- **Red.** Fill `--error-500`, text `--font-white`. Hover `--error-600`.
+- **Green.** Fill `--success-500`, text `--font-white`. Hover `--success-600`.
+- **Blue.** Fill `--accent-blue`, text `--font-white`. Hover brightness 90%.
+- **Orange.** Fill `--accent-orange`, text `--font-white`. Hover brightness 90%.
+- **Yellow.** Fill `--accent-yellow`, text `--font-white`. Hover brightness 90%.
 - **Text / link button.** No background, text `--brand-primary` 14/600. Use for "Editar", "Sabores", inline actions.
 - **Full-width variant.** Set `width: 100%` (login "Entrar", form submits in modals).
 
@@ -233,15 +238,17 @@ Each spec lists the tokens that compose the component. Build new variants by com
 - Header row: order number (`#42`) 14/700 + payment badge.
 - Customer name 14/600, type badge (Entrega/Retirada).
 - Time 12 `--font-secondary` + total 16/700 `--font-primary`.
-- Action button at bottom (full-width, primary or success per column).
+- Action button at bottom, right-aligned (not full-width), single-word label, colored to match its column: blue (Aceitar), orange (Pronto), green (Entrega), yellow (Finalizar).
 - "Finalizados" column variant: opacity 0.85, no action button.
 
 ### Kanban Column
 - Width 320–360px, vertical gap 12 between cards.
 - Header bar: 8px tall colored strip + title 14/700:
-  - Novos → `--accent-blue`
+  - Para aceitar → `--accent-blue`
   - Em preparo → `--accent-orange`
-  - Finalizados → `--accent-green`
+  - Prontos → `--accent-green`
+  - Saiu p/ entrega → `--accent-yellow`
+  - Finalizados → `--dark-300`
 - Counter chip in matching `*-light` tint.
 
 ### Badge / Status Pill

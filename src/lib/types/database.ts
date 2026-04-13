@@ -110,6 +110,7 @@ export type OrderStatus =
   | 'paid'
   | 'preparing'
   | 'done'
+  | 'out_for_delivery'
   | 'payment_expired'
   | 'cancelled';
 

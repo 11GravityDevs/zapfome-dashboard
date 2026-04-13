@@ -1,8 +1,8 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-export type ButtonVariant = "primary" | "secondary" | "destructive" | "success" | "text";
-export type ButtonSize = "default" | "sm";
+export type ButtonVariant = "primary" | "secondary" | "red" | "green" | "blue" | "orange" | "yellow" | "text";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -19,22 +19,26 @@ const baseClasses =
   "disabled:cursor-not-allowed disabled:bg-dark-200 disabled:text-dark-400 disabled:border-transparent";
 
 const sizeClasses: Record<ButtonSize, string> = {
-  default: "h-10 px-4 text-base rounded-md",
   sm: "h-8 px-3 text-sm rounded-sm",
+  md: "h-10 px-4 text-base rounded-md",
+  lg: "h-12 px-6 text-lg rounded-lg",
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "bg-brand-primary text-font-white hover:bg-brand-primary-dark",
   secondary: "bg-transparent text-font-primary border border-border hover:bg-bg-hover",
-  destructive: "bg-transparent text-accent-red border border-accent-red hover:bg-accent-red-light",
-  success: "bg-success-500 text-font-white hover:bg-success-600",
+  red: "bg-error-500 text-font-white hover:bg-error-600",
+  green: "bg-success-500 text-font-white hover:bg-success-600",
+  blue: "bg-accent-blue text-font-white hover:brightness-90",
+  orange: "bg-accent-orange text-font-white hover:brightness-90",
+  yellow: "bg-accent-yellow text-font-white hover:brightness-90",
   text: "bg-transparent text-brand-primary hover:underline underline-offset-2 px-0 h-auto font-semibold",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = "primary",
-    size = "default",
+    size = "md",
     fullWidth,
     leadingIcon,
     trailingIcon,
@@ -56,7 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       aria-busy={loading || undefined}
       className={cn(
         baseClasses,
-        !isTextVariant && sizeClasses[size],
+        !isTextVariant && sizeClasses[size as ButtonSize],
         variantClasses[variant],
         fullWidth && "w-full",
         className,

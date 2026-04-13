@@ -76,6 +76,8 @@
   --accent-blue-light: #eff6ff;
   --accent-orange: #f97316;
   --accent-orange-light: #fff7ed;
+  --accent-yellow: #eab308;
+  --accent-yellow-light: #fefce8;
   --accent-red: #ef4444;
   --accent-red-light: #fef2f2;
 
@@ -205,6 +207,8 @@
   --color-accent-blue-light: var(--accent-blue-light);
   --color-accent-orange: var(--accent-orange);
   --color-accent-orange-light: var(--accent-orange-light);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-yellow-light: var(--accent-yellow-light);
   --color-accent-red: var(--accent-red);
   --color-accent-red-light: var(--accent-red-light);
 
@@ -244,5 +248,37 @@ body {
     outline: 2px solid var(--brand-primary);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
+  }
+
+  * {
+    scrollbar-color: var(--brand-primary) var(--primary-100);
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--primary-100);
+    border-radius: var(--radius-full);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--brand-primary);
+    border-radius: var(--radius-full);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-primary-dark);
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

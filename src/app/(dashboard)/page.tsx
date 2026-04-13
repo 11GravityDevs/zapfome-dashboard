@@ -164,7 +164,7 @@ export default function DashboardHomePage() {
         />
         <KpiCard
           icon={<DollarSign size={20} />}
-          label="Faturamento"
+          label="Faturamento Bruto"
           value={loading ? "–" : formatCurrency(kpis?.revenue ?? 0)}
           trend={revenueTrend !== null ? { value: revenueTrend } : undefined}
         />

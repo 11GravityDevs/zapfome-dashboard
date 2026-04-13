@@ -71,7 +71,7 @@ export function Modal({
             aria-label="Fechar"
             onClick={onClose}
             autoFocus
-            className="-m-2 rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover"
+            className="-m-2 cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover"
           >
             <X size={24} />
           </button>

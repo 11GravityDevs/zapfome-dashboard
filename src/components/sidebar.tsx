@@ -20,7 +20,7 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-20 flex w-60 flex-col bg-bg-sidebar text-font-sidebar">
       <div className="flex items-center gap-2 px-3 py-6">
-        <Logo direction="horizontal" zapVariant="white" imageSize={48} fontSize={24} />
+        <Logo direction="horizontal" zapVariant="white" imageSize={44} fontSize={24} />
 
       </div>
 

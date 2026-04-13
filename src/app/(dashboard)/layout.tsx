@@ -39,7 +39,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <Sidebar />
         <div className="ml-60 flex min-h-screen flex-col">
           <TopBar tenant={tenant} />
-          <main className="flex-1 px-8 py-6">{children}</main>
+          <main className="flex min-h-0 flex-1 flex-col px-8 py-6">{children}</main>
         </div>
       </div>
     </TenantProvider>
