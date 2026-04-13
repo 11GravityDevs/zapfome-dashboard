@@ -30,6 +30,8 @@ There is no test runner wired up yet. Do not invent one without asking.
 
 - [src/app/](src/app/) — App Router routes, layouts, and `globals.css`. Server Components by default; only opt into `"use client"` when you need browser APIs or interactivity.
 - [src/lib/](src/lib/) — Supabase clients, tenant context, types, formatting utilities.
+- [src/lib/constants/](src/lib/constants/) — Constant values and related types. **Domain files** (`dashboard.ts`, `orders.ts`) for domain-specific constants; **topic files** (`status.ts`) for constants shared across domains.
+- [src/lib/utils/](src/lib/utils/) — Pure utility functions. **Domain files** (`dashboard.ts`, `orders.ts`) for domain-specific logic; **topic files** (`date.ts`, `math.ts`) for helpers reused across domains.
 - [src/components/](src/components/) — Reusable UI components (Button, Input, Card, Badge, Toggle, Modal, Table, etc.).
 - [src/contexts/](src/contexts/) — React context providers (tenant context).
 - [docs/design-system.md](docs/design-system.md) — **read before any UI work.** Token names, type scale, spacing, and component rules.
@@ -71,6 +73,7 @@ src/app/
 - TypeScript `strict` is on — no `any` escape hatches without a clear reason.
 - Tailwind v4: extend the design system via `@theme` in `globals.css`, not a JS config file.
 - Co-locate route-specific components under their `src/app/<route>/` folder; promote to `src/components/` only when reused across routes.
+- **Keep page files thin.** Page components (`page.tsx`) should only contain rendering logic and data-fetching orchestration. Extract constants to `src/lib/constants/` and pure utility functions to `src/lib/utils/`. Use **domain files** for domain-specific code (`dashboard.ts`, `orders.ts`, `menu.ts`) and **topic files** for shared cross-domain helpers (`date.ts`, `math.ts`). If a function only serves one domain, it stays in the domain file; the moment a second domain needs it, promote it to a topic file.
 - Imports use the `@/` alias for anything under `src/`.
 - **Comments: only when VERY essential.** Prefer self-documented code — good names over prose. No JSDoc blocks restating what a function does, no explanatory preambles, no section banners. Keep a comment only when its absence would cause a real bug or leave a non-obvious trap for the next reader (e.g. "do not remove this line — it's what refreshes the cookies"). Delete everything else.
 

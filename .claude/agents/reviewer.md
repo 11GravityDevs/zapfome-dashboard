@@ -81,6 +81,17 @@ Currency, date, time, and phone formatting must use helpers from `@/lib/format.t
 
 Flag raw `Intl.NumberFormat`, `date-fns` `format()`, or manual string formatting in component files.
 
+### MEDIUM — Thin page files
+
+Page components (`page.tsx`) should only contain rendering logic and data-fetching orchestration:
+- Constants (option arrays, label maps, magic values) belong in `src/lib/constants/`.
+- Pure utility functions (date range helpers, math, type guards) belong in `src/lib/utils/`.
+- **Domain files** (`dashboard.ts`, `orders.ts`, `menu.ts`) hold domain-specific code.
+- **Topic files** (`date.ts`, `math.ts`, `status.ts`) hold helpers reused across two or more domains.
+- If a function only serves one domain, keep it in the domain file. Promote to a topic file only when a second domain needs it.
+
+Flag any `page.tsx` that defines more than one non-component `const` or non-handler `function` at module scope — those should be extracted. Also flag domain files that contain clearly cross-domain helpers (e.g. a generic `calcTrend` math function living in `dashboard.ts`).
+
 ### MEDIUM — Code conventions
 
 - No unnecessary comments (the project prefers self-documented code — good names over prose). No JSDoc blocks, no section banners, no explanatory preambles.

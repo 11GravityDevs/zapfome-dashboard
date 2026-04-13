@@ -144,4 +144,4 @@ If clean: "Design system compliance check passed. No violations found."
 - NEVER read `design.pen` — it is encrypted and only accessible via pencil MCP tools.
 - If a needed token does not exist, report: "MISSING TOKEN — a value of [X] is needed but no matching token exists. Ask the user before creating one."
 - Do not suggest creating new tokens or components — only flag what needs attention.
-- Do not check non-UI files (lib utilities, types, configs).
+- Do not check non-UI files (lib utilities, types, configs, `src/lib/constants/`, `src/lib/utils/`).

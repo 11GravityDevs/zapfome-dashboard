@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { Logo } from "@/components/logo";
 import { Sidebar } from "@/components/sidebar";
 import { TopBar } from "@/components/top-bar";
 import { TenantProvider } from "@/contexts/tenant-context";
@@ -47,10 +48,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
 function FullPageMessage({ title, body }: { title: string; body: string }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-6">
-      <div className="max-w-md rounded-xl border border-border bg-bg-card p-8 text-center shadow-card">
-        <h1 className="text-xl font-bold text-font-primary">{title}</h1>
-        <p className="mt-3 text-sm text-font-secondary">{body}</p>
+    <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-(--spacing-md)">
+      <div className="flex w-full max-w-md flex-col items-center">
+        <Logo width={80} />
+
+        <div className="mt-(--spacing-xl) w-full rounded-xl border border-border bg-bg-card p-(--spacing-xl) text-center shadow-card">
+          <h1 className="text-xl font-bold text-font-primary">{title}</h1>
+          <p className="mt-(--spacing-sm) text-sm text-font-secondary">{body}</p>
+        </div>
       </div>
     </div>
   );
