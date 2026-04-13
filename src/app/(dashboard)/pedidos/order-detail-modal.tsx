@@ -64,8 +64,10 @@ type OrderDetailModalProps = {
 };
 
 const STATUS_BADGE: Partial<Record<OrderStatus, { label: string; variant: BadgeVariant }>> = {
+  pending_delivery_payment: { label: "Pgto. pendente", variant: "yellow" },
   paid: { label: "Novo", variant: "blue" },
   preparing: { label: "Em preparo", variant: "orange" },
+  ready: { label: "Pronto", variant: "green" },
   done: { label: "Pronto", variant: "green" },
   out_for_delivery: { label: "Saiu p/ entrega", variant: "yellow" },
   cancelled: { label: "Cancelado", variant: "red" },
@@ -211,7 +213,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
         </Button>
       </div>
 
-      {order.status === "paid" && (
+      {(order.status === "paid" || order.status === "pending_delivery_payment") && (
         <div className="flex items-center justify-end gap-4">
           <Button
             variant="secondary"

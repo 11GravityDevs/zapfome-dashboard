@@ -29,7 +29,7 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
   };
 
   for (const order of orders) {
-    if (order.status === "paid") {
+    if (order.status === "paid" || order.status === "pending_delivery_payment") {
       grouped.to_accept.push(order);
     } else if (order.status === "preparing") {
       grouped.preparing.push(order);
@@ -40,7 +40,7 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
       } else {
         grouped.finished.push(order);
       }
-    } else if (order.status === "done") {
+    } else if (order.status === "done" || order.status === "ready") {
       const updatedAt = new Date(order.updated_at).getTime();
       if (now - updatedAt < thresholdMs) {
         grouped.ready.push(order);

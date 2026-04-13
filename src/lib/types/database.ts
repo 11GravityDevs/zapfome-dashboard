@@ -85,9 +85,18 @@ export type Customer = {
   tenant_id: string;
   phone: string;
   name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CustomerAddress = {
+  id: string;
+  tenant_id: string;
+  customer_id: string;
   address: string | null;
-  neighborhood: string | null;
-  city: string | null;
+  neighborhood: string;
+  city: string;
+  address_complement: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -107,8 +116,10 @@ export type OrderStatus =
   | 'pending_address'
   | 'confirmed'
   | 'awaiting_payment'
+  | 'pending_delivery_payment'
   | 'paid'
   | 'preparing'
+  | 'ready'
   | 'done'
   | 'out_for_delivery'
   | 'payment_expired'
@@ -127,6 +138,8 @@ export type Order = {
   created_at: string;
   confirmed_at: string | null;
   printed_at: string | null;
+  forecast_min_minutes: number | null;
+  forecast_max_minutes: number | null;
   updated_at: string;
 };
 
