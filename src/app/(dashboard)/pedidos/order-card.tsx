@@ -1,26 +1,21 @@
 "use client";
 
 import { Badge } from "@/components/badge";
-import { Button, type ButtonVariant } from "@/components/button";
 import { cn } from "@/lib/cn";
 import { formatCurrency, timeAgo } from "@/lib/format";
 import { formatItemsPreview, type KanbanOrder } from "@/lib/utils/orders";
 
 type OrderCardProps = {
   order: KanbanOrder;
-  actionLabel?: string;
-  actionVariant?: ButtonVariant;
+  accentColor: string;
   faded?: boolean;
-  onAction?: () => void;
   onClick?: () => void;
 };
 
 export function OrderCard({
   order,
-  actionLabel,
-  actionVariant,
+  accentColor,
   faded,
-  onAction,
   onClick,
 }: OrderCardProps) {
   const deliveryInfo = order.order_delivery_info;
@@ -38,8 +33,9 @@ export function OrderCard({
           onClick?.();
         }
       }}
+      style={{ borderLeftColor: `var(--${accentColor.replace("bg-", "")})` }}
       className={cn(
-        "flex cursor-pointer flex-col gap-(--spacing-md) rounded-md border border-border bg-bg-card p-(--spacing-md) shadow-soft transition-shadow hover:shadow-card hover:bg-bg-hover",
+        "flex cursor-pointer flex-col gap-(--spacing-md) rounded-md border border-border border-l-4 bg-bg-card p-(--spacing-md) shadow-soft transition-shadow hover:shadow-card hover:bg-bg-hover",
         faded && "opacity-[0.85] hover:shadow-soft hover:bg-bg-card cursor-default",
       )}
     >
@@ -87,21 +83,6 @@ export function OrderCard({
           </Badge>
         )}
       </div>
-
-      {actionLabel && actionVariant && !faded && (
-        <div className="flex justify-end">
-          <Button
-            variant={actionVariant}
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAction?.();
-            }}
-          >
-            {actionLabel}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

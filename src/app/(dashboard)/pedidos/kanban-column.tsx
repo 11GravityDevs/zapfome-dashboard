@@ -9,16 +9,15 @@ import { OrderCard } from "./order-card";
 type KanbanColumnProps = {
   config: KanbanColumnConfig;
   orders: KanbanOrder[];
-  onAction?: (orderId: string) => void;
   onCardClick?: (order: KanbanOrder) => void;
 };
 
-export function KanbanColumn({ config, orders, onAction, onCardClick }: KanbanColumnProps) {
+export function KanbanColumn({ config, orders, onCardClick }: KanbanColumnProps) {
   return (
     <div className="flex w-[340px] shrink-0 flex-col">
-      <div className={cn("h-2 rounded-t-md", config.stripColor)} />
+      <div className={cn("h-[5px] rounded-t-md", config.stripColor)} />
 
-      <div className="flex items-center gap-2 border-x border-border bg-bg-card px-(--spacing-md) py-3">
+      <div className="flex items-center gap-2 border-x bg-bg-card border-b border-border shadow-soft px-(--spacing-md) py-3">
         <span className="text-sm font-bold text-font-primary">{config.title}</span>
         <Badge variant={config.badgeVariant}>{orders.length}</Badge>
       </div>
@@ -28,10 +27,8 @@ export function KanbanColumn({ config, orders, onAction, onCardClick }: KanbanCo
           <OrderCard
             key={order.id}
             order={order}
-            actionLabel={config.actionLabel}
-            actionVariant={config.actionVariant}
+            accentColor={config.stripColor}
             faded={config.faded}
-            onAction={() => onAction?.(order.id)}
             onClick={() => onCardClick?.(order)}
           />
         ))}

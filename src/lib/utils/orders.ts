@@ -57,6 +57,38 @@ export function getTodayStart(): string {
   return startOfDay(new Date()).toISOString();
 }
 
+export function formatFlavorText(
+  flavors: { fraction: number; menu_item_flavor: { name: string } | null }[],
+): string | null {
+  if (flavors.length === 0) return null;
+  return flavors
+    .map((f) => {
+      const name = f.menu_item_flavor?.name ?? "Sabor";
+      if (f.fraction < 1) {
+        const display = f.fraction === 0.5 ? "1/2" : `${Math.round(f.fraction * 100)}%`;
+        return `${display} ${name}`;
+      }
+      return name;
+    })
+    .join(", ");
+}
+
+export function getWhatsAppLink(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const full = digits.startsWith("55") ? digits : `55${digits}`;
+  return `https://wa.me/${full}`;
+}
+
+export function formatEstimatedTime(
+  settings: { pickup_time_min: number; pickup_time_max: number; delivery_time_min: number; delivery_time_max: number },
+  deliveryType: DeliveryType,
+): string {
+  if (deliveryType === "delivery") {
+    return `${settings.delivery_time_min} - ${settings.delivery_time_max} min`;
+  }
+  return `${settings.pickup_time_min} - ${settings.pickup_time_max} min`;
+}
+
 export function formatItemsPreview(
   items: { quantity: number; menu_item: { name: string } | null }[] | null,
 ): { visible: string[]; extraCount: number } {

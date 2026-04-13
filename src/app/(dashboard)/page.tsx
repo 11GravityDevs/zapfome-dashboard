@@ -6,6 +6,7 @@ import { startOfMonth, subDays, endOfDay, subMonths } from "date-fns";
 import { Card } from "@/components/card";
 import { KpiCard } from "@/components/kpi-card";
 import { Select } from "@/components/select";
+import { Spinner } from "@/components/spinner";
 import { PERIOD_OPTIONS, PERIOD_ORDER_LABEL, type Period } from "@/lib/constants/dashboard";
 import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
@@ -194,7 +195,9 @@ export default function DashboardHomePage() {
 
         {loading ? (
           <Card>
-            <p className="text-sm text-font-secondary">Carregando…</p>
+            <div className="flex items-center min-h-40 justify-center py-8">
+              <Spinner size="lg" />
+            </div>
           </Card>
         ) : topProducts.length === 0 ? (
           <Card>

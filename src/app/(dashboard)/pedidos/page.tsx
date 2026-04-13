@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause } from "lucide-react";
 import { Button } from "@/components/button";
-import { KANBAN_COLUMNS, ORDERS_POLL_INTERVAL_MS, type KanbanColumnId } from "@/lib/constants/orders";
+import { Spinner } from "@/components/spinner";
+import { KANBAN_COLUMNS, ORDERS_POLL_INTERVAL_MS } from "@/lib/constants/orders";
 import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
 import { formatTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { groupOrdersByColumn, getTodayStart, type KanbanOrder } from "@/lib/utils/orders";
 import { KanbanColumn } from "./kanban-column";
+import { OrderDetailModal } from "./order-detail-modal";
 import { PauseModal } from "./pause-modal";
 
 export default function PedidosPage() {
@@ -21,6 +23,7 @@ export default function PedidosPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [pauseModalOpen, setPauseModalOpen] = useState(false);
   const [pauseLoading, setPauseLoading] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const fetchIdRef = useRef(0);
   const refetchRef = useRef<() => void>(() => {});
@@ -115,68 +118,6 @@ export default function PedidosPage() {
 
   const grouped = groupOrdersByColumn(orders);
 
-  async function handleAccept(orderId: string) {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: "preparing" as const } : o)),
-    );
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("order")
-      .update({ status: "preparing", updated_at: new Date().toISOString() })
-      .eq("id", orderId)
-      .eq("tenant_id", tenantId);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao aceitar pedido." });
-      refetchRef.current();
-    }
-  }
-
-  async function handleMarkReady(orderId: string) {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? { ...o, status: "done" as const, updated_at: new Date().toISOString() }
-          : o,
-      ),
-    );
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("order")
-      .update({ status: "done", updated_at: new Date().toISOString() })
-      .eq("id", orderId)
-      .eq("tenant_id", tenantId);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao marcar pedido como pronto." });
-      refetchRef.current();
-    }
-  }
-
-  async function handleMarkOutForDelivery(orderId: string) {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? { ...o, status: "out_for_delivery" as const, updated_at: new Date().toISOString() }
-          : o,
-      ),
-    );
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("order")
-      .update({ status: "out_for_delivery", updated_at: new Date().toISOString() })
-      .eq("id", orderId)
-      .eq("tenant_id", tenantId);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao marcar pedido como saiu p/ entrega." });
-      refetchRef.current();
-    }
-  }
-
   async function handlePause(minutes: number) {
     setPauseLoading(true);
     const pausedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
@@ -198,17 +139,13 @@ export default function PedidosPage() {
     setPauseModalOpen(false);
   }
 
-  const columnActions: Partial<Record<KanbanColumnId, (orderId: string) => void>> = {
-    to_accept: handleAccept,
-    preparing: handleMarkReady,
-    ready: handleMarkOutForDelivery,
-  };
-
   if (loading) {
     return (
       <div className="flex h-full flex-col gap-6">
         <PageHeader lastUpdated={null} onPauseClick={() => setPauseModalOpen(true)} />
-        <p className="text-sm text-font-secondary">Carregando…</p>
+        <div className="flex flex-1 h-full items-center justify-center">
+          <Spinner size="lg" />
+        </div>
       </div>
     );
   }
@@ -227,7 +164,7 @@ export default function PedidosPage() {
         <>
           <div
             ref={kanbanRef}
-            className="scrollbar-none flex min-h-0 flex-1 gap-4 overflow-x-auto pb-4"
+            className="scrollbar-none flex min-h-0 px-8 -mx-8 flex-1 gap-4 overflow-x-auto pb-4"
             onScroll={handleKanbanScroll}
           >
             {KANBAN_COLUMNS.map((col) => (
@@ -235,7 +172,7 @@ export default function PedidosPage() {
                 key={col.id}
                 config={col}
                 orders={grouped[col.id]}
-                onAction={columnActions[col.id]}
+                onCardClick={(order) => setSelectedOrderId(order.id)}
               />
             ))}
           </div>
@@ -249,6 +186,12 @@ export default function PedidosPage() {
           </div>
         </>
       )}
+
+      <OrderDetailModal
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        onOrderUpdated={() => refetchRef.current()}
+      />
 
       <PauseModal
         open={pauseModalOpen}

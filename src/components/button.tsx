@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { Spinner } from "@/components/spinner";
 
 export type ButtonVariant = "primary" | "secondary" | "red" | "green" | "blue" | "orange" | "yellow" | "text";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -20,8 +21,8 @@ const baseClasses =
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-sm rounded-sm",
-  md: "h-10 px-4 text-base rounded-md",
-  lg: "h-12 px-6 text-lg rounded-lg",
+  md: "h-10 px-4 text-sm rounded-md",
+  lg: "h-12 px-6 text-base rounded-lg",
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -68,10 +69,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...rest}
     >
       {loading ? (
-        <span
-          aria-hidden="true"
-          className="inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-        />
+        <Spinner size="sm" className="border-current border-t-transparent" />
       ) : (
         leadingIcon
       )}
