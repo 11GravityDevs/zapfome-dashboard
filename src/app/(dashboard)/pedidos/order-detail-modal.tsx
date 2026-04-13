@@ -153,6 +153,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
 
   async function handleStatusUpdate(newStatus: OrderStatus, successMessage: string) {
     if (!order) return;
+
     setActionLoading(true);
     const supabase = createClient();
 
@@ -248,11 +249,13 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
           >
             {confirmCancel ? "Sim, cancelar" : "Cancelar pedido"}
           </Button>
+
           {confirmCancel && (
             <Button variant="secondary" size="md" onClick={() => setConfirmCancel(false)}>
               Não
             </Button>
           )}
+
           {!confirmCancel && (
             <Button
               variant="primary"

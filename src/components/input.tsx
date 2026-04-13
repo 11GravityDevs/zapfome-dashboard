@@ -11,7 +11,7 @@ export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, hint, error, leadingIcon, trailingIcon, className, id, disabled, type, ...rest },
+  { label, hint, error, leadingIcon, trailingIcon, className, id, disabled, type, value, ...rest },
   ref,
 ) {
   const generatedId = useId();
@@ -49,6 +49,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             "outline-none disabled:cursor-not-allowed",
             className,
           )}
+          value={value ?? ""}
           {...rest}
         />
         {isPassword && (
