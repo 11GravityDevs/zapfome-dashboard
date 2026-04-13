@@ -166,8 +166,8 @@ Three shadow recipes — pick the one that matches the surface, don't invent new
 
 | Name | CSS | Use for |
 |---|---|---|
-| Card | `0 8px 32px 4px var(--shadow-color)` | Login card, modals, drawers, primary panels |
-| Soft | `0 2px 6px rgba(0,0,0,0.25)` | KPI cards, kanban cards, dropdowns |
+| Card | `0 2px 8px var(--shadow-color)` | Login card, modals, drawers, primary panels |
+| Soft | `0 1px 3px rgba(0,0,0,0.08)` | KPI cards, kanban cards, dropdowns |
 | Brand glow | `0 4px 13px rgba(249,115,22,0.25)` | Brand icon mark, hero brand element only |
 
 Hover states should slightly raise an element (e.g. soft → card) rather than change color alone.
@@ -205,6 +205,17 @@ Each spec lists the tokens that compose the component. Build new variants by com
 - Text inside: `--font-primary` 14/normal. Placeholder: `--font-secondary`.
 - Focus: 2px `--brand-primary` ring, border becomes `--brand-primary`.
 - Error: 1px `--accent-red` border, helper text `--accent-red` 12/500 below.
+
+### Select
+- Custom dropdown (not native `<select>`). Trigger button + floating options list.
+- **Trigger:** same visual treatment as Input — white (`--bg-card`) fill, 1px `--border` stroke, radius `--radius-md`, height ~44, padding `12 16`. Text `--font-primary` 14/normal. Placeholder text `--font-secondary`.
+- Trailing chevron (ChevronDown, 16, `--font-secondary`), rotates 180° when open.
+- Focus / open: 2px `--brand-primary` ring, border becomes `--brand-primary`.
+- **Dropdown panel:** `--bg-card` fill, 1px `--border`, radius `--radius-md`, Card shadow, `z-index: 50`, max-height 240, overflow auto, padding-y 4.
+- **Option item:** padding `10 16`, text `--font-primary` 14/normal, `cursor-pointer`. Hover/focused: bg `--bg-hover`. Selected: `--brand-primary` text + font-medium + trailing Check icon (16).
+- Label above (optional): `--font-secondary` 12/500, gap 6.
+- Error: 1px `--accent-red` border, helper text `--accent-red` 12/500 below.
+- Keyboard: Arrow keys navigate, Enter/Space select, Escape closes. ARIA combobox + listbox pattern.
 
 ### Card (generic)
 - Fill `--bg-card`, radius `--radius-lg`, 1px `--border` stroke optional, padding `--spacing-lg` (24), Soft shadow.

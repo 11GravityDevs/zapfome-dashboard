@@ -3,18 +3,19 @@ import { cn } from "@/lib/cn";
 
 type LogoProps = {
   direction?: "horizontal" | "vertical";
-  width?: number;
+  imageSize?: number;
+  fontSize?: number;
   zapVariant?: "dark" | "white";
   className?: string;
 };
 
 export function Logo({
   direction = "vertical",
-  width = 80,
+  imageSize = 80,
+  fontSize = 24,
   zapVariant = "dark",
   className,
 }: LogoProps) {
-  const fontSize = Math.round(width * 0.3);
 
   return (
     <div
@@ -28,8 +29,8 @@ export function Logo({
       <Image
         src="/logo.webp"
         alt="ZapFome"
-        width={width}
-        height={width}
+        width={imageSize}
+        height={imageSize}
         priority
         className="rounded-xl shadow-brand-glow"
       />

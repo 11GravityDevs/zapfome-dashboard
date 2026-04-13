@@ -5,6 +5,7 @@ import { ShoppingBag, DollarSign, Receipt, TrendingUp } from "lucide-react";
 import { startOfMonth, subDays, endOfDay, subMonths } from "date-fns";
 import { Card } from "@/components/card";
 import { KpiCard } from "@/components/kpi-card";
+import { Select } from "@/components/select";
 import { PERIOD_OPTIONS, PERIOD_ORDER_LABEL, type Period } from "@/lib/constants/dashboard";
 import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
@@ -145,41 +146,36 @@ export default function DashboardHomePage() {
         <h1 className="text-xl font-bold text-font-primary">Início</h1>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-font-secondary">Período:</span>
-          <select
+          <Select
             value={period}
-            onChange={(e) => handlePeriodChange(e.target.value as Period)}
-            className="rounded-md border border-border bg-bg-card px-3 py-2 text-sm text-font-primary focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-          >
-            {PERIOD_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => handlePeriodChange(v as Period)}
+            options={PERIOD_OPTIONS}
+            className="w-48"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          icon={<ShoppingBag size={24} />}
+          icon={<ShoppingBag size={20} />}
           label={PERIOD_ORDER_LABEL[period]}
           value={loading ? "–" : kpis?.orderCount ?? 0}
           trend={orderTrend !== null ? { value: orderTrend } : undefined}
         />
         <KpiCard
-          icon={<DollarSign size={24} />}
+          icon={<DollarSign size={20} />}
           label="Faturamento"
           value={loading ? "–" : formatCurrency(kpis?.revenue ?? 0)}
           trend={revenueTrend !== null ? { value: revenueTrend } : undefined}
         />
         <KpiCard
-          icon={<Receipt size={24} />}
+          icon={<Receipt size={20} />}
           label="Ticket médio"
           value={loading ? "–" : formatCurrency(kpis?.avgTicket ?? 0)}
           trend={ticketTrend !== null ? { value: ticketTrend } : undefined}
         />
         <KpiCard
-          icon={<TrendingUp size={24} />}
+          icon={<TrendingUp size={20} />}
           label="Receita mensal"
           value={loading ? "–" : formatCurrency(kpis?.monthlyRevenue ?? 0)}
           trend={monthTrend !== null ? { value: monthTrend } : undefined}

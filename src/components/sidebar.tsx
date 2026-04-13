@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Clock, ClipboardList, Home, Settings, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Logo } from "./logo";
 
 const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
   { label: "Início", icon: Home, href: "/" },
@@ -18,17 +19,9 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 flex w-60 flex-col bg-bg-sidebar text-font-sidebar">
-      <div className="flex items-center gap-2 px-6 py-6">
-        <span
-          aria-hidden="true"
-          className="inline-flex size-9 items-center justify-center rounded-md bg-brand-primary text-font-white shadow-brand-glow"
-        >
-          <UtensilsCrossed size={20} />
-        </span>
-        <span className="text-xl font-extrabold tracking-tight">
-          <span className="text-font-white">Zap</span>
-          <span className="text-brand-primary">Fome</span>
-        </span>
+      <div className="flex items-center gap-2 px-3 py-6">
+        <Logo direction="horizontal" zapVariant="white" imageSize={48} fontSize={24} />
+
       </div>
 
       <nav className="flex-1 px-3 py-2">

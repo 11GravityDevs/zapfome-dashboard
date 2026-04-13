@@ -85,8 +85,8 @@
   --whatsapp-bg: #e5ddd5;
 
   --shadow-color: #0000001a;
-  --shadow-card: 0 8px 32px 4px var(--shadow-color);
-  --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-card: 0 2px 8px var(--shadow-color);
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-brand-glow: 0 4px 13px rgba(249, 115, 22, 0.25);
 
   --spacing-2xs: 2px;

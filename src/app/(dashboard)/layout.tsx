@@ -50,7 +50,7 @@ function FullPageMessage({ title, body }: { title: string; body: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-(--spacing-md)">
       <div className="flex w-full max-w-md flex-col items-center">
-        <Logo width={80} />
+        <Logo imageSize={80} fontSize={24} />
 
         <div className="mt-(--spacing-xl) w-full rounded-xl border border-border bg-bg-card p-(--spacing-xl) text-center shadow-card">
           <h1 className="text-xl font-bold text-font-primary">{title}</h1>

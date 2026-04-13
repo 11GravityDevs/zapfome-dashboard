@@ -43,7 +43,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-(--spacing-md)">
       <div className="flex w-full max-w-[440px] flex-col items-center">
-        <Logo width={80} />
+        <Logo imageSize={80} fontSize={24} />
 
         <div className="mt-(--spacing-xl) w-full rounded-xl bg-bg-card p-(--spacing-xl) shadow-card">
           <h1 className="text-center text-lg font-semibold text-font-primary">
@@ -64,6 +64,7 @@ export default function LoginPage() {
             <Input
               label="Senha"
               type="password"
+              placeholder="••••••••"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
