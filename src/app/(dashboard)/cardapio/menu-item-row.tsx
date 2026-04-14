@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Toggle } from "@/components/toggle";
 
@@ -54,9 +54,14 @@ export function MenuItemRow({
                 onCheckedChange={onToggleAvailability}
                 label={item.is_available ? "Desativar item" : "Ativar item"}
               />
-              <Button variant="text" onClick={onEdit}>
-                Editar
-              </Button>
+              <button
+                type="button"
+                onClick={onEdit}
+                className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-brand-primary"
+                aria-label={`Editar ${item.name}`}
+              >
+                <Pencil size={16} />
+              </button>
               <button
                 type="button"
                 onClick={onDelete}
@@ -98,7 +103,7 @@ export function MenuItemRow({
 
                 <Button
                   variant="text"
-                  leadingIcon={<Plus size={14} />}
+                  leadingIcon={<Plus size={16} />}
                   className="mt-1 self-center"
                   onClick={() => setFlavorModalOpen(true)}
                 >

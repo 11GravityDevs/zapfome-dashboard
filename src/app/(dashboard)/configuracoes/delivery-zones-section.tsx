@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Check, MapPin, Pencil, Trash2, X } from "lucide-react";
+import { MapPin, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
-import { Input } from "@/components/input";
 import { Modal } from "@/components/modal";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/table";
 import { Toggle } from "@/components/toggle";
@@ -23,8 +22,7 @@ type Props = {
 export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) {
   const { showToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
-  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
-  const [inlineValues, setInlineValues] = useState({ neighborhood: "", city: "", fee: "" });
+  const [editingZone, setEditingZone] = useState<DeliveryZone | null>(null);
   const [deletingZone, setDeletingZone] = useState<DeliveryZone | null>(null);
 
   async function handleAddZone(neighborhood: string, city: string, fee: number) {
@@ -44,6 +42,30 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
     showToast({ variant: "success", title: "Zona de entrega adicionada." });
   }
 
+  async function handleEditZone(neighborhood: string, city: string, fee: number) {
+    if (!editingZone) return;
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("delivery_zone")
+      .update({ neighborhood, city, fee })
+      .eq("id", editingZone.id)
+      .eq("tenant_id", tenantId);
+
+    if (error) {
+      showToast({ variant: "error", title: "Erro ao atualizar zona." });
+      return;
+    }
+
+    onZonesChange(
+      zones.map((z) =>
+        z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z,
+      ),
+    );
+    setEditingZone(null);
+    showToast({ variant: "success", title: "Zona atualizada." });
+  }
+
   async function handleToggleActive(zone: DeliveryZone) {
     const supabase = createClient();
     const newValue = !zone.is_active;
@@ -59,45 +81,6 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
     }
 
     onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: newValue } : z)));
-  }
-
-  function startInlineEdit(zone: DeliveryZone) {
-    setInlineEditId(zone.id);
-    setInlineValues({
-      neighborhood: zone.neighborhood,
-      city: zone.city,
-      fee: String(zone.fee),
-    });
-  }
-
-  async function saveInlineEdit(zoneId: string) {
-    const fee = parseFloat(inlineValues.fee.replace(",", "."));
-    if (!inlineValues.neighborhood || !inlineValues.city || isNaN(fee) || fee < 0) {
-      showToast({ variant: "warning", title: "Preencha todos os campos corretamente." });
-      return;
-    }
-
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("delivery_zone")
-      .update({ neighborhood: inlineValues.neighborhood, city: inlineValues.city, fee })
-      .eq("id", zoneId)
-      .eq("tenant_id", tenantId);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao atualizar zona." });
-      return;
-    }
-
-    onZonesChange(
-      zones.map((z) =>
-        z.id === zoneId
-          ? { ...z, neighborhood: inlineValues.neighborhood, city: inlineValues.city, fee }
-          : z,
-      ),
-    );
-    setInlineEditId(null);
-    showToast({ variant: "success", title: "Zona atualizada." });
   }
 
   async function handleDelete() {
@@ -154,47 +137,11 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
             <TBody>
               {zones.map((zone) => (
                 <TR key={zone.id}>
+                  <TD>{zone.neighborhood}</TD>
                   <TD>
-                    {inlineEditId === zone.id ? (
-                      <Input
-                        maxLength={100}
-                        value={inlineValues.neighborhood}
-                        onChange={(e) =>
-                          setInlineValues((v) => ({ ...v, neighborhood: e.target.value }))
-                        }
-                      />
-                    ) : (
-                      zone.neighborhood
-                    )}
+                    <span className="text-font-secondary">{zone.city}</span>
                   </TD>
-                  <TD>
-                    {inlineEditId === zone.id ? (
-                      <Input
-                        maxLength={100}
-                        value={inlineValues.city}
-                        onChange={(e) =>
-                          setInlineValues((v) => ({ ...v, city: e.target.value }))
-                        }
-                      />
-                    ) : (
-                      <span className="text-font-secondary">{zone.city}</span>
-                    )}
-                  </TD>
-                  <TD>
-                    {inlineEditId === zone.id ? (
-                      <Input
-                        inputMode="decimal"
-                        maxLength={8}
-                        value={inlineValues.fee}
-                        onChange={(e) =>
-                          setInlineValues((v) => ({ ...v, fee: e.target.value }))
-                        }
-                        className="w-20"
-                      />
-                    ) : (
-                      formatCurrency(zone.fee)
-                    )}
-                  </TD>
+                  <TD>{formatCurrency(zone.fee)}</TD>
                   <TD>
                     <Toggle
                       checked={zone.is_active}
@@ -204,47 +151,22 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
                   </TD>
                   <TD>
                     <div className="flex items-center gap-(--spacing-sm)">
-                      {inlineEditId === zone.id ? (
-                        <>
-                          <Button
-                            variant="text"
-                            size="sm"
-                            onClick={() => saveInlineEdit(zone.id)}
-                            aria-label="Salvar edição"
-                            className="text-success-500"
-                          >
-                            <Check size={20} />
-                          </Button>
-                          <Button
-                            variant="text"
-                            size="sm"
-                            onClick={() => setInlineEditId(null)}
-                            aria-label="Cancelar edição"
-                          >
-                            <X size={20} />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            variant="text"
-                            size="sm"
-                            onClick={() => startInlineEdit(zone)}
-                            aria-label={`Editar ${zone.neighborhood}`}
-                          >
-                            <Pencil size={20} />
-                          </Button>
-                          <Button
-                            variant="text"
-                            size="sm"
-                            onClick={() => setDeletingZone(zone)}
-                            aria-label={`Remover ${zone.neighborhood}`}
-                            className="text-font-secondary hover:text-accent-red"
-                          >
-                            <Trash2 size={20} />
-                          </Button>
-                        </>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => setEditingZone(zone)}
+                        className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-brand-primary"
+                        aria-label={`Editar ${zone.neighborhood}`}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingZone(zone)}
+                        className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-accent-red"
+                        aria-label={`Remover ${zone.neighborhood}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </TD>
                 </TR>
@@ -258,6 +180,13 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleAddZone}
+      />
+
+      <ZoneModal
+        open={editingZone !== null}
+        onClose={() => setEditingZone(null)}
+        onSave={handleEditZone}
+        zone={editingZone}
       />
 
       {deletingZone && (

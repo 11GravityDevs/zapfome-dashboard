@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
@@ -14,6 +14,7 @@ import { DeleteConfirmModal } from "./delete-confirm-modal";
 import { MenuItemRow } from "./menu-item-row";
 import { MenuItemFormModal } from "./menu-item-form-modal";
 import { NewCategoryModal } from "./new-category-modal";
+import { RenameCategoryModal } from "./rename-category-modal";
 
 export type MenuItemWithFlavors = MenuItem & {
   menu_item_flavor: MenuItemFlavor[];
@@ -33,8 +34,10 @@ export default function CardapioPage() {
   const [deleting, setDeleting] = useState(false);
   const [deletingFlavor, setDeletingFlavor] = useState<MenuItemFlavor | null>(null);
   const [deletingFlavorLoading, setDeletingFlavorLoading] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<string | null>(null);
-  const [editingCategoryName, setEditingCategoryName] = useState("");
+  const [renamingCategory, setRenamingCategory] = useState<string | null>(null);
+  const [renamingCategoryLoading, setRenamingCategoryLoading] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
+  const [deletingCategoryLoading, setDeletingCategoryLoading] = useState(false);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
 
@@ -110,7 +113,12 @@ export default function CardapioPage() {
       return;
     }
 
-    showToast({ variant: "success", title: "Item atualizado." });
+    showToast({
+      variant: newValue ? "success" : "warning",
+      title: newValue
+        ? `Item "${item.name}" ativado.`
+        : `Item "${item.name}" desativado.`,
+    });
   }
 
   async function handleConfirmDelete() {
@@ -172,7 +180,15 @@ export default function CardapioPage() {
         })),
       );
       showToast({ variant: "error", title: "Não foi possível atualizar o sabor." });
+      return;
     }
+
+    showToast({
+      variant: newValue ? "success" : "warning",
+      title: newValue
+        ? `Sabor "${flavor.name}" ativado.`
+        : `Sabor "${flavor.name}" desativado.`,
+    });
   }
 
   async function handleAddFlavor(itemId: string, name: string) {
@@ -240,10 +256,11 @@ export default function CardapioPage() {
   async function handleRenameCategory(oldName: string, newName: string) {
     const trimmed = newName.trim();
     if (!trimmed || trimmed === oldName) {
-      setEditingCategory(null);
+      setRenamingCategory(null);
       return;
     }
 
+    setRenamingCategoryLoading(true);
     const supabase = createClient();
     const { error } = await supabase
       .from("menu_item")
@@ -253,7 +270,7 @@ export default function CardapioPage() {
 
     if (error) {
       showToast({ variant: "error", title: "Não foi possível renomear a categoria." });
-      setEditingCategory(null);
+      setRenamingCategoryLoading(false);
       return;
     }
 
@@ -262,9 +279,48 @@ export default function CardapioPage() {
         item.category === oldName ? { ...item, category: trimmed } : item,
       ),
     );
+    setCustomCategories((prev) =>
+      prev.map((c) => (c === oldName ? trimmed : c)),
+    );
     if (activeCategory === oldName) setActiveCategory(trimmed);
-    setEditingCategory(null);
+    setRenamingCategory(null);
+    setRenamingCategoryLoading(false);
     showToast({ variant: "success", title: "Categoria renomeada." });
+  }
+
+  async function handleDeleteCategory() {
+    if (!deletingCategory) return;
+
+    const categoryItems = items.filter((i) => i.category === deletingCategory);
+
+    if (categoryItems.length === 0) {
+      setCustomCategories((prev) => prev.filter((c) => c !== deletingCategory));
+      setDeletingCategory(null);
+      if (activeCategory === deletingCategory) setActiveCategory(null);
+      showToast({ variant: "success", title: "Categoria removida." });
+      return;
+    }
+
+    setDeletingCategoryLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("menu_item")
+      .delete()
+      .eq("tenant_id", tenantId)
+      .eq("category", deletingCategory);
+
+    if (error) {
+      showToast({ variant: "error", title: "Não foi possível excluir a categoria." });
+      setDeletingCategoryLoading(false);
+      return;
+    }
+
+    setItems((prev) => prev.filter((i) => i.category !== deletingCategory));
+    setCustomCategories((prev) => prev.filter((c) => c !== deletingCategory));
+    if (activeCategory === deletingCategory) setActiveCategory(null);
+    showToast({ variant: "success", title: "Categoria excluída." });
+    setDeletingCategory(null);
+    setDeletingCategoryLoading(false);
   }
 
   function openCreateModal() {
@@ -378,28 +434,26 @@ export default function CardapioPage() {
           {grouped.map((group) => (
             <div key={group.category}>
               <div className="mb-3 flex items-center gap-2">
-                {editingCategory === group.category ? (
-                  <Input
-                    autoFocus
-                    maxLength={50}
-                    value={editingCategoryName}
-                    onChange={(e) => setEditingCategoryName(e.target.value)}
-                    onBlur={() => handleRenameCategory(group.category, editingCategoryName)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter")
-                        handleRenameCategory(group.category, editingCategoryName);
-                      if (e.key === "Escape") setEditingCategory(null);
-                    }}
-                    className="text-lg font-semibold"
-                  />
-                ) : (
-                  <>
-                    <h2 className="text-lg font-semibold text-font-primary">{group.category}</h2>
-                    <span className="text-sm font-semibold text-brand-primary">
-                      {group.items.length} {group.items.length === 1 ? "item" : "itens"}
-                    </span>
-                  </>
-                )}
+                <h2 className="text-lg font-semibold text-font-primary">{group.category}</h2>
+                <span className="text-sm font-semibold text-brand-primary">
+                  {group.items.length} {group.items.length === 1 ? "item" : "itens"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRenamingCategory(group.category)}
+                  className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-brand-primary"
+                  aria-label={`Renomear ${group.category}`}
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeletingCategory(group.category)}
+                  className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-accent-red"
+                  aria-label={`Excluir ${group.category}`}
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
 
               <div className="overflow-hidden rounded-lg border border-border bg-bg-card">
@@ -459,6 +513,33 @@ export default function CardapioPage() {
           setCustomCategories((prev) => [...prev, name]);
           setCategoryModalOpen(false);
           showToast({ variant: "success", title: "Categoria adicionada." });
+        }}
+      />
+
+      <DeleteConfirmModal
+        open={deletingCategory !== null}
+        itemName={deletingCategory ?? ""}
+        loading={deletingCategoryLoading}
+        onConfirm={handleDeleteCategory}
+        onClose={() => setDeletingCategory(null)}
+        title="Excluir categoria"
+        description={
+          deletingCategory
+            ? `Tem certeza que deseja excluir a categoria "${deletingCategory}" e todos os seus itens? Esta ação não pode ser desfeita.`
+            : ""
+        }
+      />
+
+      <RenameCategoryModal
+        open={renamingCategory !== null}
+        onClose={() => setRenamingCategory(null)}
+        currentName={renamingCategory ?? ""}
+        existingCategories={categories}
+        loading={renamingCategoryLoading}
+        onConfirm={(newName) => {
+          if (renamingCategory) {
+            handleRenameCategory(renamingCategory, newName);
+          }
         }}
       />
     </div>

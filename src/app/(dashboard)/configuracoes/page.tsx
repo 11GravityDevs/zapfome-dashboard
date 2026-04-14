@@ -98,7 +98,7 @@ export default function ConfiguracoesPage() {
       };
 
       const newGeneral: GeneralSettingsData = {
-        minOrderValue: s ? String(s.min_order_value) : "",
+        minOrderValue: s ? String(Math.round(s.min_order_value * 100)) : "",
         deliveryTimeMin: s ? String(s.delivery_time_min) : "",
         deliveryTimeMax: s ? String(s.delivery_time_max) : "",
         pickupTimeMin: s ? String(s.pickup_time_min) : "",
@@ -131,7 +131,7 @@ export default function ConfiguracoesPage() {
     setSaving(true);
     const supabase = createClient();
 
-    const minOrderValue = parseFloat(general.minOrderValue.replace(",", ".")) || 0;
+    const minOrderValue = (Number(general.minOrderValue) || 0) / 100;
     const deliveryTimeMin = parseInt(general.deliveryTimeMin) || 0;
     const deliveryTimeMax = parseInt(general.deliveryTimeMax) || 0;
     const pickupTimeMin = parseInt(general.pickupTimeMin) || 0;

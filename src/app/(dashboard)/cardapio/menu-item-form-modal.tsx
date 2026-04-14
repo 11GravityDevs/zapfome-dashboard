@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/button";
+import { CurrencyInput } from "@/components/currency-input";
 import { Input } from "@/components/input";
 import { Modal } from "@/components/modal";
 import { Select } from "@/components/select";
@@ -31,14 +32,6 @@ type FormData = {
 };
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
-
-function formatCurrency(cents: string): string {
-  const num = Number(cents) || 0;
-  const reais = Math.floor(num / 100);
-  const centavos = num % 100;
-  const reaisFormatted = reais.toLocaleString("pt-BR");
-  return `${reaisFormatted},${String(centavos).padStart(2, "0")}`;
-}
 
 function priceToCents(decimalPrice: number): string {
   const cents = Math.round(decimalPrice * 100);
@@ -188,11 +181,6 @@ export function MenuItemFormModal({
 
   const categoryOptions = categories.map((c) => ({ value: c, label: c }));
 
-  function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const digits = e.target.value.replace(/\D/g, "").replace(/^0+/, "");
-    updateField("price", digits);
-  }
-
   return (
     <Modal
       open={open}
@@ -231,14 +219,10 @@ export function MenuItemFormModal({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Input
+          <CurrencyInput
             label="Preço"
-            type="text"
-            inputMode="numeric"
-            maxLength={12}
-            value={formatCurrency(form.price)}
-            onChange={handlePriceChange}
-            leadingIcon={<span className="text-sm font-medium">R$</span>}
+            value={form.price}
+            onChange={(cents) => updateField("price", cents)}
             error={errors.price}
           />
 

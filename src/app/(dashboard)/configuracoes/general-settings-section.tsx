@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/card";
+import { CurrencyInput } from "@/components/currency-input";
 import { Input } from "@/components/input";
 
 export type GeneralSettingsData = {
@@ -29,21 +30,25 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
     onChange({ ...data, [field]: value });
   }
 
+  function updateTime(field: keyof GeneralSettingsData, value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 3);
+    onChange({ ...data, [field]: digits });
+  }
+
   return (
     <Card>
       <div className="flex items-center gap-(--spacing-sm) mb-(--spacing-md)">
         <SlidersHorizontal size={20} className="text-brand-primary" />
-        <h2 className="text-lg font-semibold text-font-primary">Configurações gerais</h2>
+        <h2 className="text-lg font-semibold text-font-primary">
+          Configurações gerais
+        </h2>
       </div>
 
       <div className="flex flex-col gap-(--spacing-md)">
-        <Input
+        <CurrencyInput
           label="Pedido mínimo"
-          inputMode="decimal"
-          placeholder="R$ 25,00"
-          maxLength={10}
           value={data.minOrderValue}
-          onChange={(e) => update("minOrderValue", e.target.value)}
+          onChange={(cents) => update("minOrderValue", cents)}
         />
 
         <div className="grid grid-cols-2 gap-(--spacing-md)">
@@ -59,7 +64,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
                 step={1}
                 placeholder="30"
                 value={data.deliveryTimeMin}
-                onChange={(e) => update("deliveryTimeMin", e.target.value)}
+                onChange={(e) => updateTime("deliveryTimeMin", e.target.value)}
               />
               <span className="text-font-secondary">—</span>
               <Input
@@ -69,7 +74,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
                 step={1}
                 placeholder="50"
                 value={data.deliveryTimeMax}
-                onChange={(e) => update("deliveryTimeMax", e.target.value)}
+                onChange={(e) => updateTime("deliveryTimeMax", e.target.value)}
               />
             </div>
           </div>
@@ -86,7 +91,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
                 step={1}
                 placeholder="15"
                 value={data.pickupTimeMin}
-                onChange={(e) => update("pickupTimeMin", e.target.value)}
+                onChange={(e) => updateTime("pickupTimeMin", e.target.value)}
               />
               <span className="text-font-secondary">—</span>
               <Input
@@ -96,7 +101,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
                 step={1}
                 placeholder="25"
                 value={data.pickupTimeMax}
-                onChange={(e) => update("pickupTimeMax", e.target.value)}
+                onChange={(e) => updateTime("pickupTimeMax", e.target.value)}
               />
             </div>
           </div>

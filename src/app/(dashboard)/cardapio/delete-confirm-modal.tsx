@@ -10,6 +10,7 @@ type DeleteConfirmModalProps = {
   onConfirm: () => void;
   onClose: () => void;
   title?: string;
+  description?: string;
 };
 
 export function DeleteConfirmModal({
@@ -19,6 +20,7 @@ export function DeleteConfirmModal({
   onConfirm,
   onClose,
   title = "Excluir item",
+  description,
 }: DeleteConfirmModalProps) {
   return (
     <Modal
@@ -38,8 +40,12 @@ export function DeleteConfirmModal({
       }
     >
       <p className="text-sm text-font-primary">
-        Tem certeza que deseja excluir <strong>{itemName}</strong>? Esta ação não pode ser
-        desfeita.
+        {description ?? (
+          <>
+            Tem certeza que deseja excluir <strong>{itemName}</strong>? Esta ação não pode ser
+            desfeita.
+          </>
+        )}
       </p>
     </Modal>
   );
