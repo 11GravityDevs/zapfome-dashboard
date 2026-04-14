@@ -32,24 +32,30 @@ export function EstablishmentSection({ data, onChange }: Props) {
         <Input
           label="Nome"
           placeholder="Nome do estabelecimento"
+          maxLength={100}
           value={data.name}
           onChange={(e) => update("name", e.target.value)}
         />
         <Input
           label="Telefone"
+          type="tel"
+          inputMode="tel"
           placeholder="(11) 91234-5678"
+          maxLength={15}
           value={data.phone}
           onChange={(e) => update("phone", e.target.value)}
         />
         <Input
           label="Endereço"
           placeholder="Rua, número"
+          maxLength={200}
           value={data.address}
           onChange={(e) => update("address", e.target.value)}
         />
         <Input
           label="Cidade"
           placeholder="São Paulo"
+          maxLength={100}
           value={data.city}
           onChange={(e) => update("city", e.target.value)}
         />

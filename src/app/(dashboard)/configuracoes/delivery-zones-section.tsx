@@ -157,6 +157,7 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
                   <TD>
                     {inlineEditId === zone.id ? (
                       <Input
+                        maxLength={100}
                         value={inlineValues.neighborhood}
                         onChange={(e) =>
                           setInlineValues((v) => ({ ...v, neighborhood: e.target.value }))
@@ -169,6 +170,7 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
                   <TD>
                     {inlineEditId === zone.id ? (
                       <Input
+                        maxLength={100}
                         value={inlineValues.city}
                         onChange={(e) =>
                           setInlineValues((v) => ({ ...v, city: e.target.value }))
@@ -181,6 +183,8 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
                   <TD>
                     {inlineEditId === zone.id ? (
                       <Input
+                        inputMode="decimal"
+                        maxLength={8}
                         value={inlineValues.fee}
                         onChange={(e) =>
                           setInlineValues((v) => ({ ...v, fee: e.target.value }))

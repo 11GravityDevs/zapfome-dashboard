@@ -232,6 +232,7 @@ export default function HistoricoPage() {
         <div className="flex-1 min-w-64">
           <Input
             placeholder="Buscar pelo nome ou nº pedido"
+            maxLength={100}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             leadingIcon={<Search size={16} />}

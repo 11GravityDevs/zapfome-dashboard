@@ -64,6 +64,7 @@ export function NewCategoryModal({
     >
       <Input
         label="Nome da categoria"
+        maxLength={50}
         value={name}
         onChange={(e) => {
           setName(e.target.value);

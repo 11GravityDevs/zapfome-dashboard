@@ -64,18 +64,22 @@ export function ZoneModal({ open, onClose, onSave }: Props) {
         <Input
           label="Bairro"
           placeholder="Ex: Centro"
+          maxLength={100}
           value={neighborhood}
           onChange={(e) => setNeighborhood(e.target.value)}
         />
         <Input
           label="Cidade"
           placeholder="Ex: São Paulo"
+          maxLength={100}
           value={city}
           onChange={(e) => setCity(e.target.value)}
         />
         <Input
           label="Taxa (R$)"
+          inputMode="decimal"
           placeholder="Ex: 5,00"
+          maxLength={8}
           value={fee}
           onChange={(e) => setFee(e.target.value)}
         />

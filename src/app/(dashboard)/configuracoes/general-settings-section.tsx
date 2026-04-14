@@ -39,7 +39,9 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
       <div className="flex flex-col gap-(--spacing-md)">
         <Input
           label="Pedido mínimo"
+          inputMode="decimal"
           placeholder="R$ 25,00"
+          maxLength={10}
           value={data.minOrderValue}
           onChange={(e) => update("minOrderValue", e.target.value)}
         />
@@ -53,6 +55,8 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
               <Input
                 type="number"
                 min={0}
+                max={240}
+                step={1}
                 placeholder="30"
                 value={data.deliveryTimeMin}
                 onChange={(e) => update("deliveryTimeMin", e.target.value)}
@@ -61,6 +65,8 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
               <Input
                 type="number"
                 min={0}
+                max={240}
+                step={1}
                 placeholder="50"
                 value={data.deliveryTimeMax}
                 onChange={(e) => update("deliveryTimeMax", e.target.value)}
@@ -76,6 +82,8 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
               <Input
                 type="number"
                 min={0}
+                max={240}
+                step={1}
                 placeholder="15"
                 value={data.pickupTimeMin}
                 onChange={(e) => update("pickupTimeMin", e.target.value)}
@@ -84,6 +92,8 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
               <Input
                 type="number"
                 min={0}
+                max={240}
+                step={1}
                 placeholder="25"
                 value={data.pickupTimeMax}
                 onChange={(e) => update("pickupTimeMax", e.target.value)}
@@ -98,6 +108,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
           </label>
           <textarea
             rows={3}
+            maxLength={1000}
             placeholder="Olá! Bem-vindo ao nosso restaurante. Como posso ajudar?"
             value={data.greetingMessage}
             onChange={(e) => update("greetingMessage", e.target.value)}
@@ -111,6 +122,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
           </label>
           <textarea
             rows={3}
+            maxLength={1000}
             placeholder="Estamos fechados no momento. Nosso horário de funcionamento é..."
             value={data.closedMessage}
             onChange={(e) => update("closedMessage", e.target.value)}

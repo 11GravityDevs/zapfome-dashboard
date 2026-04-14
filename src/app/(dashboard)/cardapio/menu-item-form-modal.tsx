@@ -215,6 +215,7 @@ export function MenuItemFormModal({
           value={form.name}
           onChange={(e) => updateField("name", e.target.value)}
           error={errors.name}
+          maxLength={100}
         />
 
         <div className="flex flex-col gap-1.5">
@@ -223,6 +224,7 @@ export function MenuItemFormModal({
             value={form.description}
             onChange={(e) => updateField("description", e.target.value)}
             rows={3}
+            maxLength={500}
             placeholder="Descrição do item"
             className="resize-none rounded-md border border-border bg-bg-card px-4 py-3 text-sm text-font-primary outline-none transition-colors placeholder:text-font-secondary focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/30"
           />
@@ -233,6 +235,7 @@ export function MenuItemFormModal({
             label="Preço"
             type="text"
             inputMode="numeric"
+            maxLength={12}
             value={formatCurrency(form.price)}
             onChange={handlePriceChange}
             leadingIcon={<span className="text-sm font-medium">R$</span>}
@@ -262,7 +265,9 @@ export function MenuItemFormModal({
           <Input
             label="Qtd. máxima de sabores"
             type="number"
-            min="1"
+            min={1}
+            max={20}
+            step={1}
             value={form.maxFlavors}
             onChange={(e) => updateField("maxFlavors", e.target.value)}
             error={errors.maxFlavors}
@@ -273,40 +278,44 @@ export function MenuItemFormModal({
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-font-secondary">Sabores</label>
 
-            {form.flavors.map((flavor, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 rounded-md border border-border bg-bg-secondary px-3 py-2"
-              >
-                <span className="flex-1 text-sm text-font-primary">{flavor}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveModalFlavor(index)}
-                  className="cursor-pointer text-font-secondary transition-colors hover:text-accent-red"
-                  aria-label={`Remover ${flavor}`}
+            <div className="flex flex-wrap gap-2">
+              {form.flavors.map((flavor, index) => (
+                <div
+                  key={index}
+                  className="flex w-fit items-center gap-2 rounded-md border border-border bg-bg-secondary px-3 py-2"
                 >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
+                  <span className="text-sm text-font-primary">{flavor}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveModalFlavor(index)}
+                    className="cursor-pointer text-font-secondary transition-colors hover:text-accent-red"
+                    aria-label={`Remover ${flavor}`}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
 
             <div className="flex items-start gap-2">
-              <Input
-                placeholder="Nome do sabor"
-                value={newFlavorName}
-                onChange={(e) => {
-                  setNewFlavorName(e.target.value);
-                  if (newFlavorError) setNewFlavorError("");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddModalFlavor();
-                  }
-                }}
-                error={newFlavorError}
-                className="flex-1"
-              />
+              <div className="flex-1">
+                <Input
+                  placeholder="Nome do sabor"
+                  maxLength={60}
+                  value={newFlavorName}
+                  onChange={(e) => {
+                    setNewFlavorName(e.target.value);
+                    if (newFlavorError) setNewFlavorError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddModalFlavor();
+                    }
+                  }}
+                  error={newFlavorError}
+                />
+              </div>
               <Button variant="secondary" size="sm" onClick={handleAddModalFlavor} className="mt-0.5 h-11">
                 Adicionar
               </Button>

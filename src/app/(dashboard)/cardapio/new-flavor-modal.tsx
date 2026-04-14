@@ -65,6 +65,7 @@ export function NewFlavorModal({
     >
       <Input
         label="Nome do sabor"
+        maxLength={60}
         value={name}
         onChange={(e) => {
           setName(e.target.value);

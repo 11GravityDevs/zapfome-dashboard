@@ -317,6 +317,7 @@ export default function CardapioPage() {
         <div className="w-80">
           <Input
             placeholder="Buscar um item..."
+            maxLength={100}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             leadingIcon={<Search size={16} />}
@@ -380,6 +381,7 @@ export default function CardapioPage() {
                 {editingCategory === group.category ? (
                   <Input
                     autoFocus
+                    maxLength={50}
                     value={editingCategoryName}
                     onChange={(e) => setEditingCategoryName(e.target.value)}
                     onBlur={() => handleRenameCategory(group.category, editingCategoryName)}

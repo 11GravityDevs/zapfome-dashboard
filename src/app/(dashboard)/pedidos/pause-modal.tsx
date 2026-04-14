@@ -95,6 +95,8 @@ export function PauseModal({ open, onClose, onConfirm, loading }: PauseModalProp
           <Input
             type="number"
             min={1}
+            max={1440}
+            step={1}
             placeholder="Minutos"
             value={customMinutes}
             onChange={(e) => setCustomMinutes(e.target.value)}
