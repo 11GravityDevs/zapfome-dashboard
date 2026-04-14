@@ -2,7 +2,20 @@
 
 Multi-tenant WhatsApp food-ordering dashboard for Brazilian restaurants. Web tool restaurant owners use to run daily operations (orders, menu, settings) during the lunch/dinner rush. All UI copy is **Brazilian Portuguese (PT-BR)** — no English fallbacks.
 
-@AGENTS.md
+<!-- BEGIN:nextjs-agent-rules -->
+**This is NOT the Next.js you know.** This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+
+## Quality Gate Subagents
+
+| Subagent | Model | What it checks |
+|---|---|---|
+| `reviewer` | Opus | Architecture, tenant scoping, TypeScript strict, PT-BR copy, component reuse, Next.js 16 patterns, code conventions |
+| `design-system-checker` | Sonnet | Hardcoded colors/spacing/radii/shadows, design token usage, component spec compliance, status color mapping, locale formatting |
+
+**Implementation workflow:** Read plan doc + design-system.md -> Implement -> `yarn lint` -> delegate to `reviewer` -> delegate to `design-system-checker` -> fix CRITICAL/HIGH issues -> report.
+
+Both subagents are **read-only**. Neither should read `design.pen` (encrypted) or spawn other subagents.
 
 ## Stack
 
@@ -22,6 +35,7 @@ yarn dev           # start dev server (http://localhost:3000)
 yarn build         # production build
 yarn start         # serve the production build
 yarn lint          # eslint (flat config in eslint.config.mjs)
+yarn typecheck     # tsc --noEmit (strict mode)
 ```
 
 There is no test runner wired up yet. Do not invent one without asking.
@@ -35,7 +49,7 @@ There is no test runner wired up yet. Do not invent one without asking.
 - [src/components/](src/components/) — Reusable UI components (Button, Input, Card, Badge, Toggle, Modal, Table, etc.).
 - [src/contexts/](src/contexts/) — React context providers (tenant context).
 - [docs/design-system.md](docs/design-system.md) — **read before any UI work.** Token names, type scale, spacing, and component rules.
-- [docs/](docs/) — Implementation plans per screen (00-foundation through 07-order-history). **Read the relevant screen doc before implementing.**
+- [docs/](docs/) — Screen specs (00-foundation through 07-order-history). All screens are implemented. Read the relevant spec when modifying a screen or debugging behavior.
 - [design.pen](design.pen) — encrypted canonical visual source. Read/write **only** through the `pencil` MCP tools (`batch_get`, `batch_design`); never `Read`/`Grep` it.
 
 ## Route Structure
@@ -63,17 +77,14 @@ src/app/
 
 ## Design system rules (load-bearing)
 
-- **Never hardcode** colors, spacing, radii, font sizes, or shadows. Always reference the CSS custom property tokens defined in [docs/design-system.md](docs/design-system.md) and mirrored in [src/app/globals.css](src/app/globals.css).
-- If a token you need does not exist, **stop and ask** — do not invent intermediate shades or sizes.
-- If you change a token, update **both** [src/app/globals.css](src/app/globals.css) and [design.pen](design.pen) (via pencil MCP) so they stay in sync.
-- Audience is non-technical and time-pressured: prefer large touch targets, never hide primary actions behind hover or tiny icons.
+Detailed token rules load automatically for `.tsx` files via `.claude/rules/design-tokens.md`. Core principle: **never hardcode colors, spacing, radii, font sizes, or shadows** — use CSS custom property tokens from [docs/design-system.md](docs/design-system.md) and [src/app/globals.css](src/app/globals.css).
 
 ## Conventions
 
 - TypeScript `strict` is on — no `any` escape hatches without a clear reason.
 - Tailwind v4: extend the design system via `@theme` in `globals.css`, not a JS config file.
 - Co-locate route-specific components under their `src/app/<route>/` folder; promote to `src/components/` only when reused across routes.
-- **Keep page files thin.** Page components (`page.tsx`) should only contain rendering logic and data-fetching orchestration. Extract constants to `src/lib/constants/` and pure utility functions to `src/lib/utils/`. Use **domain files** for domain-specific code (`dashboard.ts`, `orders.ts`, `menu.ts`) and **topic files** for shared cross-domain helpers (`date.ts`, `math.ts`). If a function only serves one domain, it stays in the domain file; the moment a second domain needs it, promote it to a topic file.
+- **Keep page files thin.** Detailed rules load automatically for `page.tsx` files via `.claude/rules/page-files.md`. Core principle: extract constants to `src/lib/constants/` and utilities to `src/lib/utils/`, using domain files for domain-specific code and topic files for cross-domain helpers.
 - Imports use the `@/` alias for anything under `src/`.
 - **Comments: only when VERY essential.** Prefer self-documented code — good names over prose. No JSDoc blocks restating what a function does, no explanatory preambles, no section banners. Keep a comment only when its absence would cause a real bug or leave a non-obvious trap for the next reader (e.g. "do not remove this line — it's what refreshes the cookies"). Delete everything else.
 

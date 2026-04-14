@@ -1,0 +1,34 @@
+# Build artifacts
+.next/
+out/
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Lock files
+yarn.lock
+package-lock.json
+
+# Cache & generated
+*.tsbuildinfo
+*.map
+next-env.d.ts
+coverage/
+
+# Encrypted design file (use pencil MCP tools only)
+design.pen
+
+# Environment
+.env*
+!.env.local.example
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Binary assets
+public/

@@ -1,0 +1,10 @@
+.next/
+node_modules/
+dist/
+build/
+out/
+coverage/
+yarn.lock
+*.md
+design.pen
+public/
