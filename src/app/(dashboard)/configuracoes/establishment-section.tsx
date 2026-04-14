@@ -3,6 +3,7 @@
 import { Building2 } from "lucide-react";
 import { Card } from "@/components/card";
 import { Input } from "@/components/input";
+import { PhoneInput } from "@/components/phone-input";
 
 export type EstablishmentData = {
   name: string;
@@ -11,12 +12,20 @@ export type EstablishmentData = {
   city: string;
 };
 
+type EstablishmentErrors = {
+  name?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+};
+
 type Props = {
   data: EstablishmentData;
   onChange: (data: EstablishmentData) => void;
+  errors?: EstablishmentErrors;
 };
 
-export function EstablishmentSection({ data, onChange }: Props) {
+export function EstablishmentSection({ data, onChange, errors }: Props) {
   function update(field: keyof EstablishmentData, value: string) {
     onChange({ ...data, [field]: value });
   }
@@ -34,22 +43,21 @@ export function EstablishmentSection({ data, onChange }: Props) {
           placeholder="Nome do estabelecimento"
           maxLength={100}
           value={data.name}
+          error={errors?.name}
           onChange={(e) => update("name", e.target.value)}
         />
-        <Input
+        <PhoneInput
           label="Telefone"
-          type="tel"
-          inputMode="tel"
-          placeholder="(11) 91234-5678"
-          maxLength={15}
           value={data.phone}
-          onChange={(e) => update("phone", e.target.value)}
+          error={errors?.phone}
+          onChange={(digits) => update("phone", digits)}
         />
         <Input
           label="Endereço"
           placeholder="Rua, número"
           maxLength={200}
           value={data.address}
+          error={errors?.address}
           onChange={(e) => update("address", e.target.value)}
         />
         <Input
@@ -57,6 +65,7 @@ export function EstablishmentSection({ data, onChange }: Props) {
           placeholder="São Paulo"
           maxLength={100}
           value={data.city}
+          error={errors?.city}
           onChange={(e) => update("city", e.target.value)}
         />
       </div>

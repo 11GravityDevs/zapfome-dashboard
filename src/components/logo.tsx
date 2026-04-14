@@ -26,11 +26,12 @@ export function Logo({
       )}
     >
       <Image
-        src="/logo.webp"
+        src="/logo.png"
         alt="ZapFome"
         width={imageSize}
         height={imageSize}
         priority
+        unoptimized
         className="rounded-xl shadow-brand-glow"
       />
 

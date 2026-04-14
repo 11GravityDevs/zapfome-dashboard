@@ -8,8 +8,8 @@ export const DAY_NAMES: Record<number, string> = {
   6: "Sábado",
 };
 
-export const DEFAULT_OPEN_TIME = "12:00";
-export const DEFAULT_CLOSE_TIME = "12:00";
+export const DEFAULT_OPEN_TIME = "18:00";
+export const DEFAULT_CLOSE_TIME = "23:00";
 
 export const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
 

@@ -1,26 +1,81 @@
 "use client";
 
-import { Clock, Info } from "lucide-react";
-import { Badge } from "@/components/badge";
+import { Clock } from "lucide-react";
 import { Card } from "@/components/card";
 import { Select } from "@/components/select";
 import { Toggle } from "@/components/toggle";
+import { useToast } from "@/contexts/toast-context";
 import { DAY_NAMES, TIME_OPTIONS, type BusinessHourRow } from "@/lib/constants/settings";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   hours: BusinessHourRow[];
   onChange: (hours: BusinessHourRow[]) => void;
+  tenantId?: string;
+  onToggleSaved?: (hours: BusinessHourRow[]) => void;
 };
 
-function isNextDayClose(open: string, close: string): boolean {
-  if (!open || !close) return false;
-  return close <= open && close !== "";
-}
+export function BusinessHoursSection({ hours, onChange, tenantId, onToggleSaved }: Props) {
+  const { showToast } = useToast();
 
-export function BusinessHoursSection({ hours, onChange }: Props) {
   function updateRow(index: number, patch: Partial<BusinessHourRow>) {
-    const next = hours.map((row, i) => (i === index ? { ...row, ...patch } : row));
+    const next = hours.map((row, i) => {
+      if (i !== index) return row;
+      const updated = { ...row, ...patch };
+      if (!updated.isClosed && updated.closeTime <= updated.openTime) {
+        if (patch.openTime !== undefined) {
+          const openIdx = TIME_OPTIONS.findIndex((o) => o.value === updated.openTime);
+          updated.closeTime = TIME_OPTIONS[Math.min(openIdx + 1, TIME_OPTIONS.length - 1)].value;
+        } else {
+          const closeIdx = TIME_OPTIONS.findIndex((o) => o.value === updated.closeTime);
+          updated.openTime = TIME_OPTIONS[Math.max(closeIdx - 1, 0)].value;
+        }
+      }
+      return updated;
+    });
     onChange(next);
+  }
+
+  async function handleToggleClosed(index: number, isClosed: boolean) {
+    const row = hours[index];
+    const next = hours.map((r, i) => (i === index ? { ...r, isClosed } : r));
+    onChange(next);
+
+    if (!tenantId || !onToggleSaved) return;
+
+    try {
+      const supabase = createClient();
+      const updatedRow = next[index];
+      const { error } = await supabase.from("business_hours").upsert(
+        {
+          tenant_id: tenantId,
+          day_of_week: row.dayOfWeek,
+          open_time: isClosed ? null : updatedRow.openTime,
+          close_time: isClosed ? null : updatedRow.closeTime,
+          is_closed: isClosed,
+        },
+        { onConflict: "tenant_id,day_of_week" },
+      );
+
+      if (error) {
+        console.error("[BusinessHours] Toggle closed error:", error);
+        onChange(hours);
+        showToast({ variant: "error", title: "Erro ao atualizar horário." });
+        return;
+      }
+
+      showToast({
+        variant: isClosed ? "warning" : "success",
+        title: isClosed
+          ? `${DAY_NAMES[row.dayOfWeek]} marcado como fechado.`
+          : `${DAY_NAMES[row.dayOfWeek]} marcado como aberto.`,
+      });
+      onToggleSaved(next);
+    } catch (err) {
+      console.error("[BusinessHours] Unexpected toggle error:", err);
+      onChange(hours);
+      showToast({ variant: "error", title: "Erro ao atualizar horário." });
+    }
   }
 
   return (
@@ -66,7 +121,7 @@ export function BusinessHoursSection({ hours, onChange }: Props) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-(--spacing-sm)">
+                  <div className="flex justify-center">
                     <Select
                       className="w-40"
                       options={TIME_OPTIONS}
@@ -74,19 +129,13 @@ export function BusinessHoursSection({ hours, onChange }: Props) {
                       disabled={row.isClosed}
                       onChange={(value) => updateRow(i, { closeTime: value })}
                     />
-                    {!row.isClosed && isNextDayClose(row.openTime, row.closeTime) && (
-                      <Badge variant="orange">
-                        <Info size={14} />
-                        Meia-noite (madrugada do dia seguinte)
-                      </Badge>
-                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex justify-center">
                     <Toggle
                       checked={row.isClosed}
-                      onCheckedChange={(val) => updateRow(i, { isClosed: val })}
+                      onCheckedChange={(val) => handleToggleClosed(i, val)}
                       label={`Marcar ${DAY_NAMES[row.dayOfWeek]} como fechado`}
                     />
                   </div>

@@ -12,8 +12,8 @@ export type ShowToastOptions = {
   duration?: number;
 };
 
-const DEFAULT_DURATION = 5000;
-const ERROR_DURATION = 7000;
+const DEFAULT_DURATION = 4000;
+const ERROR_DURATION = 6000;
 
 const variantIcons: Record<ToastVariant, ToastIcon> = {
   error: () => <CircleAlert size={20} />,

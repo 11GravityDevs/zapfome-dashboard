@@ -14,12 +14,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   }
 
   if (resolution.status === "no_tenant") {
-    return (
-      <FullPageMessage
-        title="Nenhum estabelecimento vinculado"
-        body="Esta conta ainda não está ligada a um restaurante. Entre em contato com o suporte da Zapfome para concluir o cadastro."
-      />
-    );
+    redirect("/onboarding");
   }
 
   if (resolution.status === "inactive") {

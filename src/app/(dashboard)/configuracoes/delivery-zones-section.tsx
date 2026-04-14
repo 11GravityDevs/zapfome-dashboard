@@ -93,7 +93,15 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
         console.error("[DeliveryZones] Toggle active error:", error);
         onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: !newValue } : z)));
         showToast({ variant: "error", title: "Erro ao atualizar zona." });
+        return;
       }
+
+      showToast({
+        variant: newValue ? "success" : "warning",
+        title: newValue
+          ? `Zona "${zone.neighborhood}" ativada.`
+          : `Zona "${zone.neighborhood}" desativada.`,
+      });
     } catch (err) {
       console.error("[DeliveryZones] Unexpected toggle error:", err);
       onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: !newValue } : z)));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "@/components/button";
 import { Spinner } from "@/components/spinner";
@@ -10,6 +10,8 @@ import { buildDefaultBusinessHours, type BusinessHourRow } from "@/lib/constants
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryZone, TenantSettings } from "@/lib/types/database";
 import { toBusinessHourRows } from "@/lib/utils/settings";
+import { validateOnboardingData, hasErrors, type OnboardingErrors } from "@/lib/utils/onboarding";
+import { MenuImageSection } from "@/components/menu-image-section";
 import { BusinessHoursSection } from "./business-hours-section";
 import { DeliveryZonesSection } from "./delivery-zones-section";
 import { EstablishmentSection, type EstablishmentData } from "./establishment-section";
@@ -18,9 +20,11 @@ import { GeneralSettingsSection, type GeneralSettingsData } from "./general-sett
 export default function ConfiguracoesPage() {
   const { tenantId } = useTenant();
   const { showToast } = useToast();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<OnboardingErrors>({});
 
   const [hours, setHours] = useState<BusinessHourRow[]>(buildDefaultBusinessHours());
   const [zones, setZones] = useState<DeliveryZone[]>([]);
@@ -40,12 +44,15 @@ export default function ConfiguracoesPage() {
     city: "",
   });
 
+  const [menuImageUrls, setMenuImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
   const [initialSnapshot, setInitialSnapshot] = useState("");
 
   const isDirty =
     !loading &&
     initialSnapshot !== "" &&
-    initialSnapshot !== JSON.stringify({ hours, general, establishment });
+    initialSnapshot !== JSON.stringify({ hours, general, establishment, menuImageUrls });
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +61,7 @@ export default function ConfiguracoesPage() {
       try {
         const supabase = createClient();
 
-        const [tenantRes, settingsRes, hoursRes, zonesRes] = await Promise.all([
+        const [tenantRes, settingsRes, hoursRes, zonesRes, imagesRes] = await Promise.all([
           supabase
             .from("tenant")
             .select("name, phone, address, city, greeting_message, closed_message")
@@ -71,14 +78,19 @@ export default function ConfiguracoesPage() {
             .select("*")
             .eq("tenant_id", tenantId)
             .order("neighborhood"),
+          supabase
+            .from("tenant_menu_image")
+            .select("image_url, sort_order")
+            .eq("tenant_id", tenantId)
+            .order("sort_order"),
         ]);
 
         if (cancelled) return;
 
-        if (tenantRes.error || hoursRes.error || zonesRes.error) {
+        if (tenantRes.error || hoursRes.error || zonesRes.error || imagesRes.error) {
           console.error(
             "[Settings] Fetch error:",
-            tenantRes.error ?? hoursRes.error ?? zonesRes.error,
+            tenantRes.error ?? hoursRes.error ?? zonesRes.error ?? imagesRes.error,
           );
           showToast({ variant: "error", title: "Não foi possível carregar as configurações." });
           setLoading(false);
@@ -90,7 +102,7 @@ export default function ConfiguracoesPage() {
 
         const newEstablishment: EstablishmentData = {
           name: t.name ?? "",
-          phone: t.phone ?? "",
+          phone: (t.phone ?? "").replace(/\D/g, ""),
           address: t.address ?? "",
           city: t.city ?? "",
         };
@@ -110,14 +122,17 @@ export default function ConfiguracoesPage() {
             ? toBusinessHourRows(hoursRes.data)
             : buildDefaultBusinessHours();
 
+        const newMenuImageUrls = (imagesRes.data ?? []).map((r) => r.image_url);
+
         setInitialSnapshot(
-          JSON.stringify({ hours: newHours, general: newGeneral, establishment: newEstablishment }),
+          JSON.stringify({ hours: newHours, general: newGeneral, establishment: newEstablishment, menuImageUrls: newMenuImageUrls }),
         );
 
         setEstablishment(newEstablishment);
         setGeneral(newGeneral);
         setHours(newHours);
         setZones(zonesRes.data ?? []);
+        setMenuImageUrls(newMenuImageUrls);
         setLoading(false);
       } catch (err) {
         console.error("[Settings] Unexpected error:", err);
@@ -135,6 +150,17 @@ export default function ConfiguracoesPage() {
   }, [tenantId, showToast]);
 
   async function handleSave() {
+    const validationErrors = validateOnboardingData(establishment, menuImageUrls);
+    if (hasErrors(validationErrors)) {
+      setErrors(validationErrors);
+      requestAnimationFrame(() => {
+        const firstError = containerRef.current?.querySelector<HTMLElement>("[aria-invalid='true'], [data-field-error]");
+        firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
+
+    setErrors({});
     setSaving(true);
 
     try {
@@ -146,7 +172,18 @@ export default function ConfiguracoesPage() {
       const pickupTimeMin = parseInt(general.pickupTimeMin) || 0;
       const pickupTimeMax = Math.max(parseInt(general.pickupTimeMax) || 0, pickupTimeMin);
 
-      const [hoursRes, settingsRes, tenantRes] = await Promise.all([
+      const deleteImagesRes = await supabase
+        .from("tenant_menu_image")
+        .delete()
+        .eq("tenant_id", tenantId);
+
+      if (deleteImagesRes.error) {
+        console.error("[Settings] Delete images error:", deleteImagesRes.error);
+        showToast({ variant: "error", title: "Erro ao salvar configurações." });
+        return;
+      }
+
+      const [hoursRes, settingsRes, tenantRes, imagesRes] = await Promise.all([
         supabase.from("business_hours").upsert(
           hours.map((day) => ({
             tenant_id: tenantId,
@@ -180,18 +217,27 @@ export default function ConfiguracoesPage() {
             closed_message: general.closedMessage,
           })
           .eq("id", tenantId),
+        menuImageUrls.length > 0
+          ? supabase.from("tenant_menu_image").insert(
+              menuImageUrls.map((url, i) => ({
+                tenant_id: tenantId,
+                image_url: url,
+                sort_order: i,
+              })),
+            )
+          : Promise.resolve({ error: null }),
       ]);
 
-      if (hoursRes.error || settingsRes.error || tenantRes.error) {
+      if (hoursRes.error || settingsRes.error || tenantRes.error || imagesRes.error) {
         console.error(
           "[Settings] Save error:",
-          hoursRes.error ?? settingsRes.error ?? tenantRes.error,
+          hoursRes.error ?? settingsRes.error ?? tenantRes.error ?? imagesRes.error,
         );
         showToast({ variant: "error", title: "Erro ao salvar configurações." });
         return;
       }
 
-      setInitialSnapshot(JSON.stringify({ hours, general, establishment }));
+      setInitialSnapshot(JSON.stringify({ hours, general, establishment, menuImageUrls }));
       showToast({ variant: "success", title: "Configurações salvas com sucesso." });
     } catch (err) {
       console.error("[Settings] Unexpected save error:", err);
@@ -210,23 +256,51 @@ export default function ConfiguracoesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-(--spacing-lg)">
+    <div ref={containerRef} className="flex flex-col gap-(--spacing-lg)">
       <h1 className="text-xl font-bold text-font-primary">Configurações</h1>
 
-      <BusinessHoursSection hours={hours} onChange={setHours} />
+      <EstablishmentSection
+        data={establishment}
+        onChange={(data) => {
+          setEstablishment(data);
+          setErrors((prev) => ({ ...prev, name: undefined, phone: undefined, address: undefined, city: undefined }));
+        }}
+        errors={errors}
+      />
 
-      <DeliveryZonesSection tenantId={tenantId} zones={zones} onZonesChange={setZones} />
+      <MenuImageSection
+        imageUrls={menuImageUrls}
+        onChange={(urls) => {
+          setMenuImageUrls(urls);
+          setErrors((prev) => ({ ...prev, menuImages: undefined }));
+        }}
+        uploading={uploading}
+        onUploadingChange={setUploading}
+        error={errors.menuImages}
+      />
 
       <GeneralSettingsSection data={general} onChange={setGeneral} />
 
-      <EstablishmentSection data={establishment} onChange={setEstablishment} />
+      <BusinessHoursSection
+        hours={hours}
+        onChange={setHours}
+        tenantId={tenantId}
+        onToggleSaved={(savedHours) => {
+          setInitialSnapshot((prev) => {
+            const parsed = JSON.parse(prev);
+            return JSON.stringify({ ...parsed, hours: savedHours });
+          });
+        }}
+      />
+
+      <DeliveryZonesSection tenantId={tenantId} zones={zones} onZonesChange={setZones} />
 
       <div className="flex justify-end pb-(--spacing-md)">
         <Button
           variant="primary"
           size="lg"
           leadingIcon={<Save size={20} />}
-          disabled={!isDirty}
+          disabled={!isDirty || uploading}
           loading={saving}
           onClick={handleSave}
         >

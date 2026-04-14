@@ -10,7 +10,8 @@ export type ButtonVariant =
   | "blue"
   | "orange"
   | "yellow"
-  | "text";
+  | "text"
+  | "sidebar";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -42,6 +43,8 @@ const variantClasses: Record<ButtonVariant, string> = {
   orange: "bg-accent-orange text-font-white hover:brightness-90",
   yellow: "bg-accent-yellow text-font-white hover:brightness-90",
   text: "bg-transparent text-brand-primary hover:underline underline-offset-2 px-0 h-auto font-semibold",
+  sidebar:
+    "bg-transparent justify-start! gap-3! font-medium! text-font-sidebar hover:bg-border-dark hover:text-font-sidebar-active",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

@@ -1,17 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Clock,
   ClipboardList,
   Home,
+  LogOut,
   Settings,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
+import { Button } from "@/components/button";
+import { Modal } from "@/components/modal";
 import { cn } from "@/lib/cn";
-import { Logo } from "./logo";
+import { useToast } from "@/contexts/toast-context";
+import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 
 const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
   { label: "Início", icon: Home, href: "/" },
@@ -23,6 +29,28 @@ const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { showToast } = useToast();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const supabase = createClient();
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        showToast({ variant: "error", title: "Erro ao sair. Tente novamente." });
+        return;
+      }
+      router.push("/login");
+      router.refresh();
+    } catch {
+      showToast({ variant: "error", title: "Erro ao sair. Tente novamente." });
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 flex w-60 flex-col bg-bg-sidebar text-font-sidebar">
@@ -57,6 +85,41 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
+
+      <div className="border-t border-border-dark px-3 py-3">
+        <Button
+          variant="sidebar"
+          fullWidth
+          leadingIcon={<LogOut size={20} aria-hidden="true" />}
+          onClick={() => setShowLogoutModal(true)}
+        >
+          Sair
+        </Button>
+      </div>
+
+      <Modal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title="Sair da conta"
+        size="sm"
+        locked={loggingOut}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              disabled={loggingOut}
+              onClick={() => setShowLogoutModal(false)}
+            >
+              Cancelar
+            </Button>
+            <Button variant="red" loading={loggingOut} onClick={handleLogout}>
+              Sair
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-font-secondary">Deseja mesmo sair?</p>
+      </Modal>
     </aside>
   );
 }
