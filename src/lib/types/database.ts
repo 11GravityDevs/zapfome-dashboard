@@ -111,23 +111,23 @@ export type DeliveryZone = {
 };
 
 export type OrderStatus =
-  | 'idle'
-  | 'pending_cart'
-  | 'pending_address'
-  | 'confirmed'
-  | 'awaiting_payment'
-  | 'pending_delivery_payment'
-  | 'paid'
-  | 'preparing'
-  | 'ready'
-  | 'done'
-  | 'out_for_delivery'
-  | 'payment_expired'
-  | 'cancelled';
+  | "idle"
+  | "pending_cart"
+  | "pending_address"
+  | "confirmed"
+  | "awaiting_payment"
+  | "pending_delivery_payment"
+  | "paid"
+  | "preparing"
+  | "ready"
+  | "done"
+  | "out_for_delivery"
+  | "payment_expired"
+  | "cancelled";
 
-export type DeliveryType = 'delivery' | 'pickup';
+export type DeliveryType = "delivery" | "pickup";
 
-export type PaymentMethod = 'pix' | 'on_delivery';
+export type PaymentMethod = "pix" | "on_delivery";
 
 export type Order = {
   id: string;

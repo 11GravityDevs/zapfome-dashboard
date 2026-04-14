@@ -2,7 +2,15 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Spinner } from "@/components/spinner";
 
-export type ButtonVariant = "primary" | "secondary" | "red" | "green" | "blue" | "orange" | "yellow" | "text";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "red"
+  | "green"
+  | "blue"
+  | "orange"
+  | "yellow"
+  | "text";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

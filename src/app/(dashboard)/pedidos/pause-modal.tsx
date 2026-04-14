@@ -31,8 +31,7 @@ export function PauseModal({ open, onClose, onConfirm, loading }: PauseModalProp
   }
 
   const isValid =
-    selected === "indefinite" ||
-    (selected === "custom" ? parseInt(customMinutes, 10) > 0 : true);
+    selected === "indefinite" || (selected === "custom" ? parseInt(customMinutes, 10) > 0 : true);
 
   return (
     <Modal

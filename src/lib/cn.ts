@@ -1,5 +1,7 @@
 export function cn(
-  ...inputs: Array<string | number | false | null | undefined | Record<string, boolean | undefined | null>>
+  ...inputs: Array<
+    string | number | false | null | undefined | Record<string, boolean | undefined | null>
+  >
 ): string {
   const parts: string[] = [];
   for (const input of inputs) {

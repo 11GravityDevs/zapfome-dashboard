@@ -150,19 +150,30 @@ export function Select({
           aria-labelledby={label ? `${selectId}-label` : undefined}
           aria-invalid={hasError || undefined}
           aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
-          aria-activedescendant={open && focusedIndex >= 0 ? `${selectId}-opt-${focusedIndex}` : undefined}
+          aria-activedescendant={
+            open && focusedIndex >= 0 ? `${selectId}-opt-${focusedIndex}` : undefined
+          }
           disabled={disabled}
           onClick={toggle}
           onKeyDown={handleKeyDown}
           className={cn(
             "flex w-full cursor-pointer items-center gap-2 rounded-md border bg-bg-card px-4 h-11 text-left transition-colors",
             "focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/30",
-            hasError ? "border-accent-red" : open ? "border-brand-primary ring-2 ring-brand-primary/30" : "border-border",
+            hasError
+              ? "border-accent-red"
+              : open
+                ? "border-brand-primary ring-2 ring-brand-primary/30"
+                : "border-border",
             disabled && "opacity-60 cursor-not-allowed",
           )}
         >
           {leadingIcon && <span className="text-font-secondary shrink-0">{leadingIcon}</span>}
-          <span className={cn("flex-1 truncate text-sm", selectedOption ? "text-font-primary" : "text-font-secondary")}>
+          <span
+            className={cn(
+              "flex-1 truncate text-sm",
+              selectedOption ? "text-font-primary" : "text-font-secondary",
+            )}
+          >
             {displayLabel}
           </span>
           <ChevronDown

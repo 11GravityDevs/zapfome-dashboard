@@ -29,7 +29,14 @@ function computeTimeLeft(pausedUntil: string): string | null {
   return ms > 0 ? formatTimeLeft(ms) : null;
 }
 
-export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil, isActive }: ActivateModalProps) {
+export function ActivateModal({
+  open,
+  onClose,
+  onConfirm,
+  loading,
+  pausedUntil,
+  isActive,
+}: ActivateModalProps) {
   const isIndefinite = !isActive && !pausedUntil;
   const shouldCount = open && !!pausedUntil;
   const currentTimeLeft = shouldCount ? computeTimeLeft(pausedUntil) : null;
@@ -80,8 +87,7 @@ export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil, 
           </p>
         ) : timeLeft ? (
           <p className="text-sm font-medium text-font-primary">
-            Tempo restante da pausa:{" "}
-            <span className="text-brand-primary">{timeLeft}</span>
+            Tempo restante da pausa: <span className="text-brand-primary">{timeLeft}</span>
           </p>
         ) : null}
       </div>

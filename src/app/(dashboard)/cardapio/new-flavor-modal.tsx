@@ -12,12 +12,7 @@ type NewFlavorModalProps = {
   onConfirm: (name: string) => void | Promise<void>;
 };
 
-export function NewFlavorModal({
-  open,
-  onClose,
-  existingFlavors,
-  onConfirm,
-}: NewFlavorModalProps) {
+export function NewFlavorModal({ open, onClose, existingFlavors, onConfirm }: NewFlavorModalProps) {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -69,7 +64,9 @@ export function NewFlavorModal({
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} loading={saving}>Adicionar</Button>
+          <Button onClick={handleConfirm} loading={saving}>
+            Adicionar
+          </Button>
         </>
       }
     >

@@ -54,7 +54,9 @@ export function buildCsv(orders: HistoryOrder[]): string {
       formatCurrency(o.total),
       payment,
       status,
-    ].map(escapeCsvField).join(",");
+    ]
+      .map(escapeCsvField)
+      .join(",");
   });
 
   return [header, ...rows].join("\n");

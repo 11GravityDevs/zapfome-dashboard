@@ -104,9 +104,7 @@ export default function CardapioPage() {
 
   async function handleToggleAvailability(item: MenuItemWithFlavors) {
     const newValue = !item.is_available;
-    setItems((prev) =>
-      prev.map((i) => (i.id === item.id ? { ...i, is_available: newValue } : i)),
-    );
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_available: newValue } : i)));
 
     try {
       const supabase = createClient();
@@ -127,9 +125,7 @@ export default function CardapioPage() {
 
       showToast({
         variant: newValue ? "success" : "warning",
-        title: newValue
-          ? `Item "${item.name}" ativado.`
-          : `Item "${item.name}" desativado.`,
+        title: newValue ? `Item "${item.name}" ativado.` : `Item "${item.name}" desativado.`,
       });
     } catch (err) {
       console.error("[Cardapio] Unexpected toggle error:", err);
@@ -214,9 +210,7 @@ export default function CardapioPage() {
 
       showToast({
         variant: newValue ? "success" : "warning",
-        title: newValue
-          ? `Sabor "${flavor.name}" ativado.`
-          : `Sabor "${flavor.name}" desativado.`,
+        title: newValue ? `Sabor "${flavor.name}" ativado.` : `Sabor "${flavor.name}" desativado.`,
       });
     } catch (err) {
       console.error("[Cardapio] Unexpected flavor toggle error:", err);
@@ -330,13 +324,9 @@ export default function CardapioPage() {
       }
 
       setItems((prev) =>
-        prev.map((item) =>
-          item.category === oldName ? { ...item, category: trimmed } : item,
-        ),
+        prev.map((item) => (item.category === oldName ? { ...item, category: trimmed } : item)),
       );
-      setCustomCategories((prev) =>
-        prev.map((c) => (c === oldName ? trimmed : c)),
-      );
+      setCustomCategories((prev) => prev.map((c) => (c === oldName ? trimmed : c)));
       if (activeCategory === oldName) setActiveCategory(trimmed);
       setRenamingCategory(null);
       showToast({ variant: "success", title: "Categoria renomeada." });

@@ -103,13 +103,9 @@ export function MenuItemFormModal({
   function validate(): FormErrors {
     const errs: FormErrors = {};
     if (!form.name.trim()) errs.name = "Nome é obrigatório.";
-    if (!form.price || Number(form.price) <= 0)
-      errs.price = "Preço deve ser maior que zero.";
+    if (!form.price || Number(form.price) <= 0) errs.price = "Preço deve ser maior que zero.";
     if (!form.category.trim()) errs.category = "Categoria é obrigatória.";
-    if (
-      form.allowsFlavors &&
-      (!form.maxFlavors || Number(form.maxFlavors) < 1)
-    ) {
+    if (form.allowsFlavors && (!form.maxFlavors || Number(form.maxFlavors) < 1)) {
       errs.maxFlavors = "Mínimo de 1 sabor.";
     }
     if (form.allowsFlavors && !isEditing && form.flavors.length === 0) {
@@ -185,9 +181,7 @@ export function MenuItemFormModal({
             sort_order: idx,
           }));
 
-          const { error: flavorError } = await supabase
-            .from("menu_item_flavor")
-            .insert(flavorRows);
+          const { error: flavorError } = await supabase.from("menu_item_flavor").insert(flavorRows);
 
           if (flavorError) {
             console.error("[MenuItemForm] Flavor insert error:", flavorError);
@@ -244,9 +238,7 @@ export function MenuItemFormModal({
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-font-secondary">
-            Descrição
-          </label>
+          <label className="text-xs font-medium text-font-secondary">Descrição</label>
           <textarea
             value={form.description}
             onChange={(e) => updateField("description", e.target.value)}
@@ -299,9 +291,7 @@ export function MenuItemFormModal({
 
         {form.allowsFlavors && !isEditing && (
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-font-secondary">
-              Sabores
-            </label>
+            <label className="text-xs font-medium text-font-secondary">Sabores</label>
 
             <div className="flex flex-wrap gap-2">
               {form.flavors.map((flavor, index) => (
@@ -352,9 +342,7 @@ export function MenuItemFormModal({
             </div>
 
             {errors.flavors && (
-              <p className="text-xs font-medium text-accent-red">
-                {errors.flavors}
-              </p>
+              <p className="text-xs font-medium text-accent-red">{errors.flavors}</p>
             )}
           </div>
         )}

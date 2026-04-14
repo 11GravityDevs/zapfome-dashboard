@@ -16,7 +16,6 @@ export function Logo({
   zapVariant = "dark",
   className,
 }: LogoProps) {
-
   return (
     <div
       className={cn(
@@ -35,10 +34,7 @@ export function Logo({
         className="rounded-xl shadow-brand-glow"
       />
 
-      <p
-        className="font-extrabold tracking-tight"
-        style={{ fontSize }}
-      >
+      <p className="font-extrabold tracking-tight" style={{ fontSize }}>
         <span
           className={cn({
             "text-font-primary": zapVariant === "dark",

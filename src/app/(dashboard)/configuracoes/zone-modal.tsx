@@ -86,11 +86,7 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
           value={city}
           onChange={(e) => setCity(e.target.value)}
         />
-        <CurrencyInput
-          label="Taxa de entrega"
-          value={feeCents}
-          onChange={setFeeCents}
-        />
+        <CurrencyInput label="Taxa de entrega" value={feeCents} onChange={setFeeCents} />
       </div>
     </Modal>
   );

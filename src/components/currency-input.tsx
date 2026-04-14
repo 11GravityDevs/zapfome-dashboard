@@ -18,7 +18,14 @@ function formatCentsDisplay(cents: string): string {
   return `${reaisFormatted},${String(centavos).padStart(2, "0")}`;
 }
 
-export function CurrencyInput({ label, value, onChange, error, maxLength = 12, disabled }: CurrencyInputProps) {
+export function CurrencyInput({
+  label,
+  value,
+  onChange,
+  error,
+  maxLength = 12,
+  disabled,
+}: CurrencyInputProps) {
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "").replace(/^0+/, "");
     onChange(digits);

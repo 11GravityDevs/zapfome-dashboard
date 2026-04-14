@@ -46,11 +46,12 @@ export default function LoginPage() {
         <Logo imageSize={80} fontSize={24} />
 
         <div className="mt-(--spacing-xl) w-full rounded-xl bg-bg-card p-(--spacing-xl) shadow-card">
-          <h1 className="text-center text-lg font-semibold text-font-primary">
-            Acesse seu painel
-          </h1>
+          <h1 className="text-center text-lg font-semibold text-font-primary">Acesse seu painel</h1>
 
-          <form onSubmit={handleSubmit} className="mt-(--spacing-lg) flex flex-col gap-(--spacing-md)">
+          <form
+            onSubmit={handleSubmit}
+            className="mt-(--spacing-lg) flex flex-col gap-(--spacing-md)"
+          >
             <Input
               label="E-mail"
               type="email"
@@ -73,12 +74,7 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
 
-            <Button
-              type="submit"
-              fullWidth
-              loading={loading}
-              className="mt-(--spacing-md)"
-            >
+            <Button type="submit" fullWidth loading={loading} className="mt-(--spacing-md)">
               Entrar
             </Button>
           </form>

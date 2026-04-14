@@ -16,7 +16,7 @@ export type KanbanColumnConfig = {
 };
 
 export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
-{
+  {
     id: "preparing",
     title: "Em preparo",
     stripColor: "bg-accent-orange",

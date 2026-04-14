@@ -1,4 +1,35 @@
 {
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && npx prettier --write \"$TOOL_INPUT_FILE\" 2>/dev/null; exit 0",
+            "if": "Edit(src/**/*.{ts,tsx}) | Write(src/**/*.{ts,tsx})",
+            "statusMessage": "Formatting..."
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && yarn lint --quiet 2>/dev/null; exit 0",
+            "statusMessage": "Running linter..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && yarn typecheck 2>&1 | tail -20; exit 0",
+            "statusMessage": "Type-checking..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Skill(update-config)",
@@ -47,7 +78,9 @@
       "Glob",
       "Grep",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "mcp__claude_ai_Supabase__list_tables",
+      "mcp__claude_ai_Supabase__execute_sql"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -70,6 +103,9 @@
       "Bash(sudo:*)",
       "Bash(npm:*)",
       "Bash(npx -y:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Minotti\\Documents\\Projects\\zapfome-dashboard\\.claude"
     ]
   }
 }

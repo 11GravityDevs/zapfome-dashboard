@@ -34,9 +34,7 @@ export function KanbanColumn({ config, orders, onCardClick }: KanbanColumnProps)
         ))}
 
         {orders.length === 0 && (
-          <p className="py-8 text-center text-xs text-font-secondary">
-            Nenhum pedido
-          </p>
+          <p className="py-8 text-center text-xs text-font-secondary">Nenhum pedido</p>
         )}
       </div>
     </div>

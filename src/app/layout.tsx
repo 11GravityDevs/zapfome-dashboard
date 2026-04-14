@@ -11,7 +11,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Zapfome",
-  description: "Painel do lojista Zapfome — gerencie pedidos, cardápio e configurações do seu restaurante.",
+  description:
+    "Painel do lojista Zapfome — gerencie pedidos, cardápio e configurações do seu restaurante.",
 };
 
 export default function RootLayout({

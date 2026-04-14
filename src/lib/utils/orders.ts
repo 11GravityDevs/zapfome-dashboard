@@ -77,7 +77,12 @@ export function getWhatsAppLink(phone: string): string {
 }
 
 export function formatEstimatedTime(
-  settings: { pickup_time_min: number; pickup_time_max: number; delivery_time_min: number; delivery_time_max: number },
+  settings: {
+    pickup_time_min: number;
+    pickup_time_max: number;
+    delivery_time_min: number;
+    delivery_time_max: number;
+  },
   deliveryType: DeliveryType,
 ): string {
   if (deliveryType === "delivery") {

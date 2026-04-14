@@ -95,10 +95,21 @@ export default function DashboardHomePage() {
         if (cancelled || id !== fetchIdRef.current) return;
 
         const hasError =
-          currentRes.error || prevRes.error || monthRes.error || prevMonthRes.error || productsRes.error;
+          currentRes.error ||
+          prevRes.error ||
+          monthRes.error ||
+          prevMonthRes.error ||
+          productsRes.error;
 
         if (hasError) {
-          console.error("[Dashboard] KPI fetch error:", currentRes.error ?? prevRes.error ?? monthRes.error ?? prevMonthRes.error ?? productsRes.error);
+          console.error(
+            "[Dashboard] KPI fetch error:",
+            currentRes.error ??
+              prevRes.error ??
+              monthRes.error ??
+              prevMonthRes.error ??
+              productsRes.error,
+          );
           showToast({
             variant: "error",
             title: "Não foi possível carregar os dados do dashboard.",
@@ -141,7 +152,9 @@ export default function DashboardHomePage() {
     }
 
     fetchData();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tenantId, period, showToast]);
 
   const orderTrend = kpis ? calcTrend(kpis.orderCount, kpis.prevOrderCount) : null;
@@ -172,7 +185,7 @@ export default function DashboardHomePage() {
         <KpiCard
           icon={<ShoppingBag size={20} />}
           label={PERIOD_ORDER_LABEL[period]}
-          value={loading ? "–" : kpis?.orderCount ?? 0}
+          value={loading ? "–" : (kpis?.orderCount ?? 0)}
           trend={orderTrend !== null ? { value: orderTrend } : undefined}
         />
         <KpiCard
@@ -197,9 +210,7 @@ export default function DashboardHomePage() {
 
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-font-primary">
-            Top 10 produtos mais vendidos
-          </h2>
+          <h2 className="text-lg font-semibold text-font-primary">Top 10 produtos mais vendidos</h2>
           <p className="text-sm font-normal text-font-secondary">
             Período: {getPeriodLabel(period)}
           </p>
@@ -213,9 +224,7 @@ export default function DashboardHomePage() {
           </Card>
         ) : topProducts.length === 0 ? (
           <Card>
-            <p className="text-sm text-font-secondary">
-              Nenhum produto vendido neste período.
-            </p>
+            <p className="text-sm text-font-secondary">Nenhum produto vendido neste período.</p>
           </Card>
         ) : (
           <Card>

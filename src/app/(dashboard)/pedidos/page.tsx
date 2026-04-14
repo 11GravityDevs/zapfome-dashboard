@@ -38,7 +38,8 @@ export default function PedidosPage() {
 
         const { data, error } = await supabase
           .from("order")
-          .select(`
+          .select(
+            `
             id,
             order_number,
             status,
@@ -48,7 +49,8 @@ export default function PedidosPage() {
             order_delivery_info (type),
             order_payment (payment_method, total),
             order_item (quantity, menu_item (name))
-          `)
+          `,
+          )
           .eq("tenant_id", tenantId)
           .in("status", ["preparing", "ready", "done", "out_for_delivery"])
           .gte("created_at", getTodayStart())
@@ -179,7 +181,6 @@ export default function PedidosPage() {
         onClose={() => setSelectedOrderId(null)}
         onOrderUpdated={() => refetchRef.current()}
       />
-
     </div>
   );
 }

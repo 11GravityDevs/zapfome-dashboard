@@ -14,18 +14,17 @@ export function Table({
 }: TableHTMLAttributes<HTMLTableElement> & { children?: ReactNode }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border bg-bg-card shadow-soft">
-      <table className={cn("w-full border-collapse text-sm text-font-primary", className)} {...rest}>
+      <table
+        className={cn("w-full border-collapse text-sm text-font-primary", className)}
+        {...rest}
+      >
         {children}
       </table>
     </div>
   );
 }
 
-export function THead({
-  className,
-  children,
-  ...rest
-}: HTMLAttributes<HTMLTableSectionElement>) {
+export function THead({ className, children, ...rest }: HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <thead className={cn("bg-bg-secondary", className)} {...rest}>
       {children}
@@ -33,11 +32,7 @@ export function THead({
   );
 }
 
-export function TBody({
-  className,
-  children,
-  ...rest
-}: HTMLAttributes<HTMLTableSectionElement>) {
+export function TBody({ className, children, ...rest }: HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <tbody className={cn("divide-y divide-border-light", className)} {...rest}>
       {children}
@@ -97,7 +92,10 @@ export type TDProps = TdHTMLAttributes<HTMLTableCellElement> & {
 
 export function TD({ className, align = "left", children, ...rest }: TDProps) {
   return (
-    <td className={cn("px-4 py-3 text-sm text-font-primary", alignClasses[align], className)} {...rest}>
+    <td
+      className={cn("px-4 py-3 text-sm text-font-primary", alignClasses[align], className)}
+      {...rest}
+    >
       {children}
     </td>
   );

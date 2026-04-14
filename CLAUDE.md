@@ -36,6 +36,8 @@ yarn build         # production build
 yarn start         # serve the production build
 yarn lint          # eslint (flat config in eslint.config.mjs)
 yarn typecheck     # tsc --noEmit (strict mode)
+yarn format        # prettier --write on src/
+yarn format:check  # prettier --check on src/
 ```
 
 There is no test runner wired up yet. Do not invent one without asking.
@@ -49,7 +51,6 @@ There is no test runner wired up yet. Do not invent one without asking.
 - [src/components/](src/components/) — Reusable UI components (Button, Input, Card, Badge, Toggle, Modal, Table, etc.).
 - [src/contexts/](src/contexts/) — React context providers (tenant context).
 - [docs/design-system.md](docs/design-system.md) — **read before any UI work.** Token names, type scale, spacing, and component rules.
-- [docs/](docs/) — Screen specs (00-foundation through 07-order-history). All screens are implemented. Read the relevant spec when modifying a screen or debugging behavior.
 - [design.pen](design.pen) — encrypted canonical visual source. Read/write **only** through the `pencil` MCP tools (`batch_get`, `batch_design`); never `Read`/`Grep` it.
 
 ## Route Structure

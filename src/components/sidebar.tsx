@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, ClipboardList, Home, Settings, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import {
+  Clock,
+  ClipboardList,
+  Home,
+  Settings,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
 
@@ -21,13 +28,15 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-20 flex w-60 flex-col bg-bg-sidebar text-font-sidebar">
       <div className="flex items-center gap-2 px-3 py-6">
         <Logo direction="horizontal" zapVariant="white" imageSize={44} fontSize={24} />
-
       </div>
 
       <nav className="flex-1 px-3 py-2">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
-            const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+            const active =
+              href === "/"
+                ? pathname === "/"
+                : pathname === href || pathname.startsWith(`${href}/`);
             return (
               <li key={href}>
                 <Link

@@ -33,9 +33,7 @@ function ToastBody({ title, description }: { title: string; description?: string
   return (
     <div className="min-w-0 flex-1">
       <p className="text-sm font-semibold">{title}</p>
-      {description && (
-        <p className="mt-(--spacing-2xs) text-xs opacity-90">{description}</p>
-      )}
+      {description && <p className="mt-(--spacing-2xs) text-xs opacity-90">{description}</p>}
     </div>
   );
 }

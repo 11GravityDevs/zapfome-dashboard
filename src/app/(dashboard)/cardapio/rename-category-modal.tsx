@@ -72,7 +72,9 @@ export function RenameCategoryModal({
           <Button variant="secondary" onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} loading={loading}>Salvar</Button>
+          <Button onClick={handleConfirm} loading={loading}>
+            Salvar
+          </Button>
         </>
       }
     >

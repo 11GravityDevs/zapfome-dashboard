@@ -15,7 +15,6 @@ import { createClient } from "@/lib/supabase/client";
 import type { DeliveryType, OrderStatus, PaymentMethod } from "@/lib/types/database";
 import { formatEstimatedTime, formatFlavorText, getWhatsAppLink } from "@/lib/utils/orders";
 
-
 type OrderDetailItem = {
   id: string;
   quantity: number;
@@ -84,7 +83,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
-  const refetchRef = useRef<() => void>(() => { });
+  const refetchRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!orderId) return;
@@ -102,7 +101,8 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
         const [orderRes, settingsRes] = await Promise.all([
           supabase
             .from("order")
-            .select(`
+            .select(
+              `
               id,
               order_number,
               status,
@@ -122,7 +122,8 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
                   menu_item_flavor (name)
                 )
               )
-            `)
+            `,
+            )
             .eq("id", orderId)
             .eq("tenant_id", tenantId)
             .single(),
@@ -219,10 +220,22 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
   const footerContent = order ? (
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center gap-4">
-        <Button variant="secondary" size="md" className="flex-1" leadingIcon={<Printer size={16} />} disabled>
+        <Button
+          variant="secondary"
+          size="md"
+          className="flex-1"
+          leadingIcon={<Printer size={16} />}
+          disabled
+        >
           Reimprimir cozinha
         </Button>
-        <Button variant="secondary" size="md" className="flex-1" leadingIcon={<Printer size={16} />} disabled>
+        <Button
+          variant="secondary"
+          size="md"
+          className="flex-1"
+          leadingIcon={<Printer size={16} />}
+          disabled
+        >
           Reimprimir balcão
         </Button>
       </div>
@@ -303,13 +316,20 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
               )}
             </div>
             {order.customer?.phone && (
-              <a href={getWhatsAppLink(order.customer.phone)}
+              <a
+                href={getWhatsAppLink(order.customer.phone)}
                 target="_blank"
-                rel="noopener noreferrer" className="flex items-center gap-2">
-                <Image src="/whatsapp-icon.svg" alt="" width={20} height={20} className="text-whatsapp-green" />
-                <span
-                  className="text-sm text-font-secondary hover:text-green-500 transition-all"
-                >
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                <Image
+                  src="/whatsapp-icon.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="text-whatsapp-green"
+                />
+                <span className="text-sm text-font-secondary hover:text-green-500 transition-all">
                   {formatPhone(order.customer.phone)}
                 </span>
               </a>
@@ -317,7 +337,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
           </section>
 
           <ItemsTable items={order.order_item} />
-
 
           <section className="flex flex-col gap-1">
             {isDelivery && order.order_delivery_info?.delivery_address ? (
@@ -337,12 +356,8 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
 
                 {payment && payment.delivery_fee > 0 && (
                   <div className="flex flex-col gap-1">
-                    <p className="text-sm text-font-secondary">
-                      Taxa de entrega:
-                    </p>
-                    <p className="text-sm text-font-primary">
-                      {formatCurrency(payment.total)}
-                    </p>
+                    <p className="text-sm text-font-secondary">Taxa de entrega:</p>
+                    <p className="text-sm text-font-primary">{formatCurrency(payment.total)}</p>
                   </div>
                 )}
               </div>
@@ -397,7 +412,9 @@ function ItemsTable({ items }: { items: OrderDetailItem[] }) {
         <Table>
           <TBody>
             <TR>
-              <TD colSpan={3} align="center">Nenhum item neste pedido.</TD>
+              <TD colSpan={3} align="center">
+                Nenhum item neste pedido.
+              </TD>
             </TR>
           </TBody>
         </Table>
@@ -425,23 +442,13 @@ function ItemsTable({ items }: { items: OrderDetailItem[] }) {
             const flavorText = formatFlavorText(item.order_item_flavor);
             return (
               <TR key={item.id}>
-                <TD className="font-semibold">
-                  {item.menu_item?.name ?? "Item"}
-                </TD>
-                {hasFlavors && (
-                  <TD className="text-xs text-font-secondary">
-                    {flavorText ?? "—"}
-                  </TD>
-                )}
+                <TD className="font-semibold">{item.menu_item?.name ?? "Item"}</TD>
+                {hasFlavors && <TD className="text-xs text-font-secondary">{flavorText ?? "—"}</TD>}
                 {hasObservations && (
-                  <TD className="text-xs text-font-secondary">
-                    {item.observation ?? "—"}
-                  </TD>
+                  <TD className="text-xs text-font-secondary">{item.observation ?? "—"}</TD>
                 )}
                 <TD align="center">{item.quantity}</TD>
-                <TD align="right">
-                  {formatCurrency(item.unit_price * item.quantity)}
-                </TD>
+                <TD align="right">{formatCurrency(item.unit_price * item.quantity)}</TD>
               </TR>
             );
           })}

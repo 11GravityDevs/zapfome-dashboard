@@ -39,9 +39,7 @@ export function GeneralSettingsSection({ data, onChange }: Props) {
     <Card>
       <div className="flex items-center gap-(--spacing-sm) mb-(--spacing-md)">
         <SlidersHorizontal size={20} className="text-brand-primary" />
-        <h2 className="text-lg font-semibold text-font-primary">
-          Configurações gerais
-        </h2>
+        <h2 className="text-lg font-semibold text-font-primary">Configurações gerais</h2>
       </div>
 
       <div className="flex flex-col gap-(--spacing-md)">

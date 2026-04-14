@@ -67,9 +67,7 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
       }
 
       onZonesChange(
-        zones.map((z) =>
-          z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z,
-        ),
+        zones.map((z) => (z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z)),
       );
       setEditingZone(null);
       showToast({ variant: "success", title: "Zona atualizada." });
@@ -149,9 +147,7 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
         </div>
 
         {zones.length === 0 ? (
-          <p className="text-sm text-font-secondary py-4">
-            Nenhuma zona de entrega configurada.
-          </p>
+          <p className="text-sm text-font-secondary py-4">Nenhuma zona de entrega configurada.</p>
         ) : (
           <Table>
             <THead>
@@ -205,11 +201,7 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
         )}
       </Card>
 
-      <ZoneModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleAddZone}
-      />
+      <ZoneModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleAddZone} />
 
       <ZoneModal
         open={editingZone !== null}
@@ -227,7 +219,11 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
           locked={deletingLoading}
           footer={
             <>
-              <Button variant="secondary" onClick={() => setDeletingZone(null)} disabled={deletingLoading}>
+              <Button
+                variant="secondary"
+                onClick={() => setDeletingZone(null)}
+                disabled={deletingLoading}
+              >
                 Cancelar
               </Button>
               <Button variant="red" onClick={handleDelete} loading={deletingLoading}>

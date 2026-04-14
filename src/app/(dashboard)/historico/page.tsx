@@ -47,7 +47,14 @@ import {
   type HistoryStats,
 } from "@/lib/utils/history";
 
-type SortColumn = "order_number" | "customer_name" | "created_at" | "delivery_type" | "total" | "payment_method" | "status";
+type SortColumn =
+  | "order_number"
+  | "customer_name"
+  | "created_at"
+  | "delivery_type"
+  | "total"
+  | "payment_method"
+  | "status";
 type SortDirection = "asc" | "desc";
 
 export default function HistoricoPage() {
@@ -177,8 +184,21 @@ export default function HistoricoPage() {
     }
 
     fetchData();
-    return () => { cancelled = true; };
-  }, [tenantId, period, debouncedSearch, statusFilter, typeFilter, paymentFilter, page, sortColumn, sortDirection, showToast]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    tenantId,
+    period,
+    debouncedSearch,
+    statusFilter,
+    typeFilter,
+    paymentFilter,
+    page,
+    sortColumn,
+    sortDirection,
+    showToast,
+  ]);
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -214,7 +234,8 @@ export default function HistoricoPage() {
   }, [tenantId, period, debouncedSearch, statusFilter, typeFilter, paymentFilter, showToast]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / HISTORY_PAGE_SIZE));
-  const ticketMedio = stats && stats.total_orders > 0 ? stats.total_revenue / stats.total_orders : 0;
+  const ticketMedio =
+    stats && stats.total_orders > 0 ? stats.total_revenue / stats.total_orders : 0;
   const allOrders = stats ? stats.total_orders + stats.cancelled_count : 0;
   const cancelamentoPct = allOrders > 0 ? (stats!.cancelled_count / allOrders) * 100 : 0;
 
@@ -240,7 +261,10 @@ export default function HistoricoPage() {
       <div className="flex flex-wrap items-center gap-3">
         <Select
           value={period}
-          onChange={(v) => { setPeriod(v as Period); setPage(1); }}
+          onChange={(v) => {
+            setPeriod(v as Period);
+            setPage(1);
+          }}
           options={PERIOD_OPTIONS}
           className="w-48"
           leadingIcon={<Calendar size={16} />}
@@ -275,10 +299,26 @@ export default function HistoricoPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <StatPill icon={<DollarSign size={14} />} label="Receita total" value={stats ? formatCurrency(stats.total_revenue) : "–"} />
-        <StatPill icon={<ShoppingBag size={14} />} label="Pedidos" value={stats ? String(stats.total_orders) : "–"} />
-        <StatPill icon={<Receipt size={14} />} label="Ticket médio" value={stats ? formatCurrency(ticketMedio) : "–"} />
-        <StatPill icon={<XCircle size={14} />} label="Cancelamentos" value={stats ? `${cancelamentoPct.toFixed(1)}%` : "–"} />
+        <StatPill
+          icon={<DollarSign size={14} />}
+          label="Receita total"
+          value={stats ? formatCurrency(stats.total_revenue) : "–"}
+        />
+        <StatPill
+          icon={<ShoppingBag size={14} />}
+          label="Pedidos"
+          value={stats ? String(stats.total_orders) : "–"}
+        />
+        <StatPill
+          icon={<Receipt size={14} />}
+          label="Ticket médio"
+          value={stats ? formatCurrency(ticketMedio) : "–"}
+        />
+        <StatPill
+          icon={<XCircle size={14} />}
+          label="Cancelamentos"
+          value={stats ? `${cancelamentoPct.toFixed(1)}%` : "–"}
+        />
       </div>
 
       {loading ? (
@@ -298,25 +338,64 @@ export default function HistoricoPage() {
           <Table>
             <THead>
               <TR>
-                <SortableTH column="order_number" current={sortColumn} direction={sortDirection} onSort={handleSort}>
+                <SortableTH
+                  column="order_number"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                >
                   Pedido #
                 </SortableTH>
-                <SortableTH column="customer_name" current={sortColumn} direction={sortDirection} onSort={handleSort}>
+                <SortableTH
+                  column="customer_name"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                >
                   Cliente
                 </SortableTH>
-                <SortableTH column="created_at" current={sortColumn} direction={sortDirection} onSort={handleSort}>
+                <SortableTH
+                  column="created_at"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                >
                   Data
                 </SortableTH>
-                <SortableTH column="delivery_type" current={sortColumn} direction={sortDirection} onSort={handleSort} align="center">
+                <SortableTH
+                  column="delivery_type"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                  align="center"
+                >
                   Tipo
                 </SortableTH>
-                <SortableTH column="total" current={sortColumn} direction={sortDirection} onSort={handleSort} align="right">
+                <SortableTH
+                  column="total"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                  align="right"
+                >
                   Total
                 </SortableTH>
-                <SortableTH column="payment_method" current={sortColumn} direction={sortDirection} onSort={handleSort} align="center">
+                <SortableTH
+                  column="payment_method"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                  align="center"
+                >
                   Pagamento
                 </SortableTH>
-                <SortableTH column="status" current={sortColumn} direction={sortDirection} onSort={handleSort} align="center">
+                <SortableTH
+                  column="status"
+                  current={sortColumn}
+                  direction={sortDirection}
+                  onSort={handleSort}
+                  align="center"
+                >
                   Status
                 </SortableTH>
               </TR>
@@ -324,23 +403,35 @@ export default function HistoricoPage() {
             <TBody>
               {orders.map((order) => {
                 const statusBadge = STATUS_BADGE_MAP[order.status];
-                const typeBadge = order.delivery_type ? DELIVERY_TYPE_BADGE_MAP[order.delivery_type] : null;
-                const paymentBadge = order.payment_method ? PAYMENT_BADGE_MAP[order.payment_method] : null;
+                const typeBadge = order.delivery_type
+                  ? DELIVERY_TYPE_BADGE_MAP[order.delivery_type]
+                  : null;
+                const paymentBadge = order.payment_method
+                  ? PAYMENT_BADGE_MAP[order.payment_method]
+                  : null;
 
                 return (
                   <TR key={order.id}>
-                    <TD className="font-semibold">#{String(order.order_number).padStart(4, "0")}</TD>
+                    <TD className="font-semibold">
+                      #{String(order.order_number).padStart(4, "0")}
+                    </TD>
                     <TD>{order.customer_name}</TD>
                     <TD>{formatDateTime(order.created_at)}</TD>
                     <TD align="center">
                       {typeBadge && <Badge variant={typeBadge.variant}>{typeBadge.label}</Badge>}
                     </TD>
-                    <TD align="right" className="font-semibold">{formatCurrency(order.total)}</TD>
-                    <TD align="center">
-                      {paymentBadge && <Badge variant={paymentBadge.variant}>{paymentBadge.label}</Badge>}
+                    <TD align="right" className="font-semibold">
+                      {formatCurrency(order.total)}
                     </TD>
                     <TD align="center">
-                      {statusBadge && <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>}
+                      {paymentBadge && (
+                        <Badge variant={paymentBadge.variant}>{paymentBadge.label}</Badge>
+                      )}
+                    </TD>
+                    <TD align="center">
+                      {statusBadge && (
+                        <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+                      )}
                     </TD>
                   </TR>
                 );
@@ -348,12 +439,14 @@ export default function HistoricoPage() {
             </TBody>
           </Table>
 
-          {totalPages > 1 && <div className="flex items-center justify-between">
-            <span className="text-xs text-font-secondary">
-              Mostrando {rangeStart}-{rangeEnd} de {totalCount} pedidos
-            </span>
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-          </div>}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-font-secondary">
+                Mostrando {rangeStart}-{rangeEnd} de {totalCount} pedidos
+              </span>
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
+          )}
         </>
       )}
     </div>
@@ -393,16 +486,21 @@ function SortableTH({
         onClick={() => onSort(column)}
         className={cn(
           "group inline-flex cursor-pointer items-center gap-1 text-xs font-semibold uppercase tracking-wide transition-colors",
-          isActive
-            ? "text-brand-primary"
-            : "text-font-secondary hover:text-brand-primary",
+          isActive ? "text-brand-primary" : "text-font-secondary hover:text-brand-primary",
         )}
       >
         {children}
         {isActive ? (
-          direction === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />
+          direction === "asc" ? (
+            <ArrowUp size={12} />
+          ) : (
+            <ArrowDown size={12} />
+          )
         ) : (
-          <ArrowUpDown size={12} className="opacity-40 transition-opacity group-hover:opacity-100" />
+          <ArrowUpDown
+            size={12}
+            className="opacity-40 transition-opacity group-hover:opacity-100"
+          />
         )}
       </button>
     </TH>
@@ -435,7 +533,9 @@ function Pagination({
 
       {pages.map((p, i) =>
         p === "..." ? (
-          <span key={`ellipsis-${i}`} className="px-1 text-xs text-font-secondary">...</span>
+          <span key={`ellipsis-${i}`} className="px-1 text-xs text-font-secondary">
+            ...
+          </span>
         ) : (
           <Button
             key={p}
@@ -463,8 +563,6 @@ function Pagination({
     </nav>
   );
 }
-
-
 
 function buildPageNumbers(current: number, total: number): (number | "...")[] {
   if (total <= 7) {

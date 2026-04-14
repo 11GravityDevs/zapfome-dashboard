@@ -12,12 +12,7 @@ type OrderCardProps = {
   onClick?: () => void;
 };
 
-export function OrderCard({
-  order,
-  accentColor,
-  faded,
-  onClick,
-}: OrderCardProps) {
+export function OrderCard({ order, accentColor, faded, onClick }: OrderCardProps) {
   const deliveryInfo = order.order_delivery_info;
   const payment = order.order_payment;
   const { visible: visibleItems, extraCount } = formatItemsPreview(order.order_item);
@@ -40,9 +35,7 @@ export function OrderCard({
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-bold text-font-primary">
-          #{order.order_number}
-        </span>
+        <span className="text-sm font-bold text-font-primary">#{order.order_number}</span>
         <Badge variant="neutral">{timeAgo(order.created_at)}</Badge>
       </div>
 
@@ -66,7 +59,10 @@ export function OrderCard({
             </span>
           ))}
           {extraCount > 0 && (
-            <span> + {extraCount} {extraCount === 1 ? "item" : "itens"}</span>
+            <span>
+              {" "}
+              + {extraCount} {extraCount === 1 ? "item" : "itens"}
+            </span>
           )}
         </div>
       )}

@@ -13,10 +13,7 @@ import { toBusinessHourRows } from "@/lib/utils/settings";
 import { BusinessHoursSection } from "./business-hours-section";
 import { DeliveryZonesSection } from "./delivery-zones-section";
 import { EstablishmentSection, type EstablishmentData } from "./establishment-section";
-import {
-  GeneralSettingsSection,
-  type GeneralSettingsData,
-} from "./general-settings-section";
+import { GeneralSettingsSection, type GeneralSettingsData } from "./general-settings-section";
 
 export default function ConfiguracoesPage() {
   const { tenantId } = useTenant();
@@ -63,11 +60,7 @@ export default function ConfiguracoesPage() {
             .select("name, phone, address, city, greeting_message, closed_message")
             .eq("id", tenantId)
             .single(),
-          supabase
-            .from("tenant_settings")
-            .select("*")
-            .eq("tenant_id", tenantId)
-            .single(),
+          supabase.from("tenant_settings").select("*").eq("tenant_id", tenantId).single(),
           supabase
             .from("business_hours")
             .select("*")
@@ -83,7 +76,10 @@ export default function ConfiguracoesPage() {
         if (cancelled) return;
 
         if (tenantRes.error || hoursRes.error || zonesRes.error) {
-          console.error("[Settings] Fetch error:", tenantRes.error ?? hoursRes.error ?? zonesRes.error);
+          console.error(
+            "[Settings] Fetch error:",
+            tenantRes.error ?? hoursRes.error ?? zonesRes.error,
+          );
           showToast({ variant: "error", title: "Não foi possível carregar as configurações." });
           setLoading(false);
           return;
@@ -133,7 +129,9 @@ export default function ConfiguracoesPage() {
     }
 
     fetchData();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tenantId, showToast]);
 
   async function handleSave() {
@@ -185,7 +183,10 @@ export default function ConfiguracoesPage() {
       ]);
 
       if (hoursRes.error || settingsRes.error || tenantRes.error) {
-        console.error("[Settings] Save error:", hoursRes.error ?? settingsRes.error ?? tenantRes.error);
+        console.error(
+          "[Settings] Save error:",
+          hoursRes.error ?? settingsRes.error ?? tenantRes.error,
+        );
         showToast({ variant: "error", title: "Erro ao salvar configurações." });
         return;
       }
@@ -214,11 +215,7 @@ export default function ConfiguracoesPage() {
 
       <BusinessHoursSection hours={hours} onChange={setHours} />
 
-      <DeliveryZonesSection
-        tenantId={tenantId}
-        zones={zones}
-        onZonesChange={setZones}
-      />
+      <DeliveryZonesSection tenantId={tenantId} zones={zones} onZonesChange={setZones} />
 
       <GeneralSettingsSection data={general} onChange={setGeneral} />
 
