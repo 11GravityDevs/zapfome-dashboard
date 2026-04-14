@@ -24,83 +24,112 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingZone, setEditingZone] = useState<DeliveryZone | null>(null);
   const [deletingZone, setDeletingZone] = useState<DeliveryZone | null>(null);
+  const [deletingLoading, setDeletingLoading] = useState(false);
 
   async function handleAddZone(neighborhood: string, city: string, fee: number) {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("delivery_zone")
-      .insert({ tenant_id: tenantId, neighborhood, city, fee, is_active: true })
-      .select()
-      .single();
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("delivery_zone")
+        .insert({ tenant_id: tenantId, neighborhood, city, fee, is_active: true })
+        .select()
+        .single();
 
-    if (error || !data) {
+      if (error || !data) {
+        console.error("[DeliveryZones] Add zone error:", error);
+        showToast({ variant: "error", title: "Erro ao adicionar zona de entrega." });
+        return;
+      }
+
+      onZonesChange([...zones, data]);
+      showToast({ variant: "success", title: "Zona de entrega adicionada." });
+    } catch (err) {
+      console.error("[DeliveryZones] Unexpected add zone error:", err);
       showToast({ variant: "error", title: "Erro ao adicionar zona de entrega." });
-      return;
     }
-
-    onZonesChange([...zones, data]);
-    showToast({ variant: "success", title: "Zona de entrega adicionada." });
   }
 
   async function handleEditZone(neighborhood: string, city: string, fee: number) {
     if (!editingZone) return;
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("delivery_zone")
-      .update({ neighborhood, city, fee })
-      .eq("id", editingZone.id)
-      .eq("tenant_id", tenantId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("delivery_zone")
+        .update({ neighborhood, city, fee })
+        .eq("id", editingZone.id)
+        .eq("tenant_id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[DeliveryZones] Edit zone error:", error);
+        showToast({ variant: "error", title: "Erro ao atualizar zona." });
+        return;
+      }
+
+      onZonesChange(
+        zones.map((z) =>
+          z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z,
+        ),
+      );
+      setEditingZone(null);
+      showToast({ variant: "success", title: "Zona atualizada." });
+    } catch (err) {
+      console.error("[DeliveryZones] Unexpected edit zone error:", err);
       showToast({ variant: "error", title: "Erro ao atualizar zona." });
-      return;
     }
-
-    onZonesChange(
-      zones.map((z) =>
-        z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z,
-      ),
-    );
-    setEditingZone(null);
-    showToast({ variant: "success", title: "Zona atualizada." });
   }
 
   async function handleToggleActive(zone: DeliveryZone) {
-    const supabase = createClient();
     const newValue = !zone.is_active;
-    const { error } = await supabase
-      .from("delivery_zone")
-      .update({ is_active: newValue })
-      .eq("id", zone.id)
-      .eq("tenant_id", tenantId);
-
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao atualizar zona." });
-      return;
-    }
-
     onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: newValue } : z)));
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("delivery_zone")
+        .update({ is_active: newValue })
+        .eq("id", zone.id)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        console.error("[DeliveryZones] Toggle active error:", error);
+        onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: !newValue } : z)));
+        showToast({ variant: "error", title: "Erro ao atualizar zona." });
+      }
+    } catch (err) {
+      console.error("[DeliveryZones] Unexpected toggle error:", err);
+      onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: !newValue } : z)));
+      showToast({ variant: "error", title: "Erro ao atualizar zona." });
+    }
   }
 
   async function handleDelete() {
     if (!deletingZone) return;
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("delivery_zone")
-      .delete()
-      .eq("id", deletingZone.id)
-      .eq("tenant_id", tenantId);
+    setDeletingLoading(true);
 
-    if (error) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("delivery_zone")
+        .delete()
+        .eq("id", deletingZone.id)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        console.error("[DeliveryZones] Delete zone error:", error);
+        showToast({ variant: "error", title: "Erro ao remover zona." });
+        return;
+      }
+
+      onZonesChange(zones.filter((z) => z.id !== deletingZone.id));
+      showToast({ variant: "success", title: "Zona removida." });
+    } catch (err) {
+      console.error("[DeliveryZones] Unexpected delete error:", err);
       showToast({ variant: "error", title: "Erro ao remover zona." });
+    } finally {
+      setDeletingLoading(false);
       setDeletingZone(null);
-      return;
     }
-
-    onZonesChange(zones.filter((z) => z.id !== deletingZone.id));
-    showToast({ variant: "success", title: "Zona removida." });
-    setDeletingZone(null);
   }
 
   return (
@@ -195,12 +224,13 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
           onClose={() => setDeletingZone(null)}
           title="Remover zona"
           size="sm"
+          locked={deletingLoading}
           footer={
             <>
-              <Button variant="secondary" onClick={() => setDeletingZone(null)}>
+              <Button variant="secondary" onClick={() => setDeletingZone(null)} disabled={deletingLoading}>
                 Cancelar
               </Button>
-              <Button variant="red" onClick={handleDelete}>
+              <Button variant="red" onClick={handleDelete} loading={deletingLoading}>
                 Remover
               </Button>
             </>

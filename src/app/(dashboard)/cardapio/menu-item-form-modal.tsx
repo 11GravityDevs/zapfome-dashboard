@@ -94,15 +94,22 @@ export function MenuItemFormModal({
   }
 
   function handleRemoveModalFlavor(index: number) {
-    updateField("flavors", form.flavors.filter((_, i) => i !== index));
+    updateField(
+      "flavors",
+      form.flavors.filter((_, i) => i !== index),
+    );
   }
 
   function validate(): FormErrors {
     const errs: FormErrors = {};
     if (!form.name.trim()) errs.name = "Nome é obrigatório.";
-    if (!form.price || Number(form.price) <= 0) errs.price = "Preço deve ser maior que zero.";
+    if (!form.price || Number(form.price) <= 0)
+      errs.price = "Preço deve ser maior que zero.";
     if (!form.category.trim()) errs.category = "Categoria é obrigatória.";
-    if (form.allowsFlavors && (!form.maxFlavors || Number(form.maxFlavors) < 1)) {
+    if (
+      form.allowsFlavors &&
+      (!form.maxFlavors || Number(form.maxFlavors) < 1)
+    ) {
       errs.maxFlavors = "Mínimo de 1 sabor.";
     }
     if (form.allowsFlavors && !isEditing && form.flavors.length === 0) {
@@ -119,64 +126,93 @@ export function MenuItemFormModal({
     }
 
     setSaving(true);
-    const supabase = createClient();
 
-    const payload = {
-      name: form.name.trim(),
-      description: form.description.trim(),
-      price: Number(form.price) / 100,
-      category: form.category.trim(),
-      allows_flavors: form.allowsFlavors,
-      max_flavors: form.allowsFlavors ? Number(form.maxFlavors) : 0,
-    };
+    try {
+      const supabase = createClient();
 
-    if (isEditing && item) {
-      const { error } = await supabase
-        .from("menu_item")
-        .update(payload)
-        .eq("id", item.id)
-        .eq("tenant_id", tenantId);
+      const payload = {
+        name: form.name.trim(),
+        description: form.description.trim(),
+        price: Number(form.price) / 100,
+        category: form.category.trim(),
+        allows_flavors: form.allowsFlavors,
+        max_flavors: form.allowsFlavors ? Number(form.maxFlavors) : 0,
+      };
 
-      if (error) {
-        showToast({ variant: "error", title: "Não foi possível atualizar o item." });
-        setSaving(false);
-        return;
+      if (isEditing && item) {
+        const { error } = await supabase
+          .from("menu_item")
+          .update(payload)
+          .eq("id", item.id)
+          .eq("tenant_id", tenantId);
+
+        if (error) {
+          console.error("[MenuItemForm] Update error:", error);
+          showToast({
+            variant: "error",
+            title: "Não foi possível atualizar o item.",
+          });
+          return;
+        }
+
+        showToast({ variant: "success", title: "Item atualizado." });
+      } else {
+        const { data: newItem, error } = await supabase
+          .from("menu_item")
+          .insert({
+            ...payload,
+            tenant_id: tenantId,
+            is_available: true,
+          })
+          .select("id")
+          .single();
+
+        if (error) {
+          console.error("[MenuItemForm] Insert error:", error);
+          showToast({
+            variant: "error",
+            title: "Não foi possível criar o item.",
+          });
+          return;
+        }
+
+        if (form.flavors.length > 0) {
+          const flavorRows = form.flavors.map((name, idx) => ({
+            tenant_id: tenantId,
+            menu_item_id: newItem.id,
+            name,
+            is_available: true,
+            sort_order: idx,
+          }));
+
+          const { error: flavorError } = await supabase
+            .from("menu_item_flavor")
+            .insert(flavorRows);
+
+          if (flavorError) {
+            console.error("[MenuItemForm] Flavor insert error:", flavorError);
+            showToast({
+              variant: "warning",
+              title: "Item criado, mas houve erro ao salvar os sabores.",
+            });
+            onSaved();
+            return;
+          }
+        }
+
+        showToast({ variant: "success", title: "Item criado." });
       }
 
-      showToast({ variant: "success", title: "Item atualizado." });
-    } else {
-      const { data: newItem, error } = await supabase
-        .from("menu_item")
-        .insert({
-          ...payload,
-          tenant_id: tenantId,
-          is_available: true,
-        })
-        .select("id")
-        .single();
-
-      if (error) {
-        showToast({ variant: "error", title: "Não foi possível criar o item." });
-        setSaving(false);
-        return;
-      }
-
-      if (form.flavors.length > 0) {
-        const flavorRows = form.flavors.map((name, idx) => ({
-          tenant_id: tenantId,
-          menu_item_id: newItem.id,
-          name,
-          is_available: true,
-          sort_order: idx,
-        }));
-        await supabase.from("menu_item_flavor").insert(flavorRows);
-      }
-
-      showToast({ variant: "success", title: "Item criado." });
+      onSaved();
+    } catch (err) {
+      console.error("[MenuItemForm] Unexpected error:", err);
+      showToast({
+        variant: "error",
+        title: "Erro inesperado ao salvar o item.",
+      });
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-    onSaved();
   }
 
   const categoryOptions = categories.map((c) => ({ value: c, label: c }));
@@ -186,6 +222,7 @@ export function MenuItemFormModal({
       open={open}
       onClose={onClose}
       title={isEditing ? "Editar item" : "Novo item"}
+      locked={saving}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
@@ -207,7 +244,9 @@ export function MenuItemFormModal({
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-font-secondary">Descrição</label>
+          <label className="text-xs font-medium text-font-secondary">
+            Descrição
+          </label>
           <textarea
             value={form.description}
             onChange={(e) => updateField("description", e.target.value)}
@@ -260,7 +299,9 @@ export function MenuItemFormModal({
 
         {form.allowsFlavors && !isEditing && (
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-font-secondary">Sabores</label>
+            <label className="text-xs font-medium text-font-secondary">
+              Sabores
+            </label>
 
             <div className="flex flex-wrap gap-2">
               {form.flavors.map((flavor, index) => (
@@ -300,13 +341,20 @@ export function MenuItemFormModal({
                   error={newFlavorError}
                 />
               </div>
-              <Button variant="secondary" size="sm" onClick={handleAddModalFlavor} className="mt-0.5 h-11">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleAddModalFlavor}
+                className="mt-0.5 h-11"
+              >
                 Adicionar
               </Button>
             </div>
 
             {errors.flavors && (
-              <p className="text-xs font-medium text-accent-red">{errors.flavors}</p>
+              <p className="text-xs font-medium text-accent-red">
+                {errors.flavors}
+              </p>
             )}
           </div>
         )}

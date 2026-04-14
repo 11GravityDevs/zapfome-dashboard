@@ -66,6 +66,7 @@ export function RenameCategoryModal({
       onClose={onClose}
       title="Renomear categoria"
       size="sm"
+      locked={loading}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>

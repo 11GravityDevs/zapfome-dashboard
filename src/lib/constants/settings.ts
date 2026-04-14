@@ -8,10 +8,17 @@ export const DAY_NAMES: Record<number, string> = {
   6: "Sábado",
 };
 
-export const DEFAULT_OPEN_TIME = "11:00";
-export const DEFAULT_CLOSE_TIME = "23:00";
+export const DEFAULT_OPEN_TIME = "12:00";
+export const DEFAULT_CLOSE_TIME = "12:00";
 
 export const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+
+export const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const hours = String(Math.floor(i / 2)).padStart(2, "0");
+  const minutes = i % 2 === 0 ? "00" : "30";
+  const value = `${hours}:${minutes}`;
+  return { value, label: value };
+});
 
 export type BusinessHourRow = {
   dayOfWeek: number;

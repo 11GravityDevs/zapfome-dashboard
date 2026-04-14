@@ -32,40 +32,53 @@ export default function PedidosPage() {
 
     async function fetchOrders() {
       const id = ++fetchIdRef.current;
-      const supabase = createClient();
 
-      const { data, error } = await supabase
-        .from("order")
-        .select(`
-          id,
-          order_number,
-          status,
-          created_at,
-          updated_at,
-          customer (name, phone),
-          order_delivery_info (type),
-          order_payment (payment_method, total),
-          order_item (quantity, menu_item (name))
-        `)
-        .eq("tenant_id", tenantId)
-        .in("status", ["preparing", "ready", "done", "out_for_delivery"])
-        .gte("created_at", getTodayStart())
-        .order("created_at", { ascending: true });
+      try {
+        const supabase = createClient();
 
-      if (cancelled || id !== fetchIdRef.current) return;
+        const { data, error } = await supabase
+          .from("order")
+          .select(`
+            id,
+            order_number,
+            status,
+            created_at,
+            updated_at,
+            customer (name, phone),
+            order_delivery_info (type),
+            order_payment (payment_method, total),
+            order_item (quantity, menu_item (name))
+          `)
+          .eq("tenant_id", tenantId)
+          .in("status", ["preparing", "ready", "done", "out_for_delivery"])
+          .gte("created_at", getTodayStart())
+          .order("created_at", { ascending: true });
 
-      if (error) {
-        showToast({
-          variant: "error",
-          title: "Não foi possível carregar os pedidos.",
-        });
+        if (cancelled || id !== fetchIdRef.current) return;
+
+        if (error) {
+          console.error("[Pedidos] Fetch orders error:", error);
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar os pedidos.",
+          });
+          setLoading(false);
+          return;
+        }
+
+        setOrders((data as unknown as KanbanOrder[]) ?? []);
+        setLastUpdated(new Date());
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[Pedidos] Unexpected error:", err);
+        if (!cancelled && id === fetchIdRef.current) {
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar os pedidos.",
+          });
+          setLoading(false);
+        }
       }
-
-      setOrders((data as unknown as KanbanOrder[]) ?? []);
-      setLastUpdated(new Date());
-      setLoading(false);
     }
 
     refetchRef.current = fetchOrders;
@@ -153,7 +166,7 @@ export default function PedidosPage() {
 
           <div
             ref={scrollbarRef}
-            className="fixed bottom-0 left-60 right-0 z-10 overflow-x-auto bg-bg-secondary px-8 h-8"
+            className="fixed bottom-0 left-60 right-0 z-10 overflow-x-auto bg-bg-secondary h-8"
             onScroll={handleScrollbarScroll}
           >
             <div style={{ width: scrollContentWidth, height: 1 }} />

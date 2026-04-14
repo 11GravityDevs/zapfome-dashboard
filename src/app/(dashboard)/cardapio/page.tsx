@@ -49,24 +49,34 @@ export default function CardapioPage() {
 
     async function fetchItems() {
       const id = ++fetchIdRef.current;
-      const supabase = createClient();
 
-      const { data, error } = await supabase
-        .from("menu_item")
-        .select("*, menu_item_flavor (*)")
-        .eq("tenant_id", tenantId)
-        .order("sort_order", { ascending: true });
+      try {
+        const supabase = createClient();
 
-      if (cancelled || id !== fetchIdRef.current) return;
+        const { data, error } = await supabase
+          .from("menu_item")
+          .select("*, menu_item_flavor (*)")
+          .eq("tenant_id", tenantId)
+          .order("sort_order", { ascending: true });
 
-      if (error) {
-        showToast({ variant: "error", title: "Não foi possível carregar o cardápio." });
+        if (cancelled || id !== fetchIdRef.current) return;
+
+        if (error) {
+          console.error("[Cardapio] Fetch items error:", error);
+          showToast({ variant: "error", title: "Não foi possível carregar o cardápio." });
+          setLoading(false);
+          return;
+        }
+
+        setItems((data as MenuItemWithFlavors[]) ?? []);
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[Cardapio] Unexpected error:", err);
+        if (!cancelled && id === fetchIdRef.current) {
+          showToast({ variant: "error", title: "Não foi possível carregar o cardápio." });
+          setLoading(false);
+        }
       }
-
-      setItems((data as MenuItemWithFlavors[]) ?? []);
-      setLoading(false);
     }
 
     refetchRef.current = fetchItems;
@@ -98,58 +108,75 @@ export default function CardapioPage() {
       prev.map((i) => (i.id === item.id ? { ...i, is_available: newValue } : i)),
     );
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item")
-      .update({ is_available: newValue })
-      .eq("id", item.id)
-      .eq("tenant_id", tenantId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item")
+        .update({ is_available: newValue })
+        .eq("id", item.id)
+        .eq("tenant_id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[Cardapio] Toggle availability error:", error);
+        setItems((prev) =>
+          prev.map((i) => (i.id === item.id ? { ...i, is_available: !newValue } : i)),
+        );
+        showToast({ variant: "error", title: "Não foi possível atualizar o item." });
+        return;
+      }
+
+      showToast({
+        variant: newValue ? "success" : "warning",
+        title: newValue
+          ? `Item "${item.name}" ativado.`
+          : `Item "${item.name}" desativado.`,
+      });
+    } catch (err) {
+      console.error("[Cardapio] Unexpected toggle error:", err);
       setItems((prev) =>
         prev.map((i) => (i.id === item.id ? { ...i, is_available: !newValue } : i)),
       );
       showToast({ variant: "error", title: "Não foi possível atualizar o item." });
-      return;
     }
-
-    showToast({
-      variant: newValue ? "success" : "warning",
-      title: newValue
-        ? `Item "${item.name}" ativado.`
-        : `Item "${item.name}" desativado.`,
-    });
   }
 
   async function handleConfirmDelete() {
     if (!deletingItem) return;
 
     setDeleting(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item")
-      .delete()
-      .eq("id", deletingItem.id)
-      .eq("tenant_id", tenantId);
 
-    if (error) {
-      if (error.code === "23503") {
-        showToast({
-          variant: "error",
-          title:
-            "Este item não pode ser excluído pois está vinculado a pedidos existentes. Desative-o em vez de excluir.",
-        });
-      } else {
-        showToast({ variant: "error", title: "Não foi possível excluir o item." });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item")
+        .delete()
+        .eq("id", deletingItem.id)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        console.error("[Cardapio] Delete item error:", error);
+        if (error.code === "23503") {
+          showToast({
+            variant: "error",
+            title:
+              "Este item não pode ser excluído pois está vinculado a pedidos existentes. Desative-o em vez de excluir.",
+          });
+        } else {
+          showToast({ variant: "error", title: "Não foi possível excluir o item." });
+        }
+        setDeleting(false);
+        return;
       }
-      setDeleting(false);
-      return;
-    }
 
-    setItems((prev) => prev.filter((i) => i.id !== deletingItem.id));
-    showToast({ variant: "success", title: "Item excluído." });
-    setDeletingItem(null);
-    setDeleting(false);
+      setItems((prev) => prev.filter((i) => i.id !== deletingItem.id));
+      showToast({ variant: "success", title: "Item excluído." });
+      setDeletingItem(null);
+      setDeleting(false);
+    } catch (err) {
+      console.error("[Cardapio] Unexpected delete error:", err);
+      showToast({ variant: "error", title: "Não foi possível excluir o item." });
+      setDeleting(false);
+    }
   }
 
   async function handleToggleFlavor(flavor: MenuItemFlavor) {
@@ -163,14 +190,36 @@ export default function CardapioPage() {
       })),
     );
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item_flavor")
-      .update({ is_available: newValue })
-      .eq("id", flavor.id)
-      .eq("tenant_id", tenantId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item_flavor")
+        .update({ is_available: newValue })
+        .eq("id", flavor.id)
+        .eq("tenant_id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[Cardapio] Toggle flavor error:", error);
+        setItems((prev) =>
+          prev.map((item) => ({
+            ...item,
+            menu_item_flavor: item.menu_item_flavor.map((f) =>
+              f.id === flavor.id ? { ...f, is_available: !newValue } : f,
+            ),
+          })),
+        );
+        showToast({ variant: "error", title: "Não foi possível atualizar o sabor." });
+        return;
+      }
+
+      showToast({
+        variant: newValue ? "success" : "warning",
+        title: newValue
+          ? `Sabor "${flavor.name}" ativado.`
+          : `Sabor "${flavor.name}" desativado.`,
+      });
+    } catch (err) {
+      console.error("[Cardapio] Unexpected flavor toggle error:", err);
       setItems((prev) =>
         prev.map((item) => ({
           ...item,
@@ -180,15 +229,7 @@ export default function CardapioPage() {
         })),
       );
       showToast({ variant: "error", title: "Não foi possível atualizar o sabor." });
-      return;
     }
-
-    showToast({
-      variant: newValue ? "success" : "warning",
-      title: newValue
-        ? `Sabor "${flavor.name}" ativado.`
-        : `Sabor "${flavor.name}" desativado.`,
-    });
   }
 
   async function handleAddFlavor(itemId: string, name: string) {
@@ -197,31 +238,37 @@ export default function CardapioPage() {
       ? Math.max(0, ...item.menu_item_flavor.map((f) => f.sort_order)) + 1
       : 0;
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("menu_item_flavor")
-      .insert({
-        tenant_id: tenantId,
-        menu_item_id: itemId,
-        name,
-        is_available: true,
-        sort_order: nextSortOrder,
-      })
-      .select()
-      .single();
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("menu_item_flavor")
+        .insert({
+          tenant_id: tenantId,
+          menu_item_id: itemId,
+          name,
+          is_available: true,
+          sort_order: nextSortOrder,
+        })
+        .select()
+        .single();
 
-    if (error) {
+      if (error) {
+        console.error("[Cardapio] Add flavor error:", error);
+        showToast({ variant: "error", title: "Não foi possível adicionar o sabor." });
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === itemId
+            ? { ...i, menu_item_flavor: [...i.menu_item_flavor, data as MenuItemFlavor] }
+            : i,
+        ),
+      );
+    } catch (err) {
+      console.error("[Cardapio] Unexpected add flavor error:", err);
       showToast({ variant: "error", title: "Não foi possível adicionar o sabor." });
-      return;
     }
-
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === itemId
-          ? { ...i, menu_item_flavor: [...i.menu_item_flavor, data as MenuItemFlavor] }
-          : i,
-      ),
-    );
   }
 
   async function handleConfirmFlavorDelete() {
@@ -233,24 +280,30 @@ export default function CardapioPage() {
   }
 
   async function handleRemoveFlavor(flavor: MenuItemFlavor) {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item_flavor")
-      .delete()
-      .eq("id", flavor.id)
-      .eq("tenant_id", tenantId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item_flavor")
+        .delete()
+        .eq("id", flavor.id)
+        .eq("tenant_id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[Cardapio] Remove flavor error:", error);
+        showToast({ variant: "error", title: "Não foi possível remover o sabor." });
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((item) => ({
+          ...item,
+          menu_item_flavor: item.menu_item_flavor.filter((f) => f.id !== flavor.id),
+        })),
+      );
+    } catch (err) {
+      console.error("[Cardapio] Unexpected remove flavor error:", err);
       showToast({ variant: "error", title: "Não foi possível remover o sabor." });
-      return;
     }
-
-    setItems((prev) =>
-      prev.map((item) => ({
-        ...item,
-        menu_item_flavor: item.menu_item_flavor.filter((f) => f.id !== flavor.id),
-      })),
-    );
   }
 
   async function handleRenameCategory(oldName: string, newName: string) {
@@ -261,31 +314,38 @@ export default function CardapioPage() {
     }
 
     setRenamingCategoryLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item")
-      .update({ category: trimmed })
-      .eq("tenant_id", tenantId)
-      .eq("category", oldName);
 
-    if (error) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item")
+        .update({ category: trimmed })
+        .eq("tenant_id", tenantId)
+        .eq("category", oldName);
+
+      if (error) {
+        console.error("[Cardapio] Rename category error:", error);
+        showToast({ variant: "error", title: "Não foi possível renomear a categoria." });
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.category === oldName ? { ...item, category: trimmed } : item,
+        ),
+      );
+      setCustomCategories((prev) =>
+        prev.map((c) => (c === oldName ? trimmed : c)),
+      );
+      if (activeCategory === oldName) setActiveCategory(trimmed);
+      setRenamingCategory(null);
+      showToast({ variant: "success", title: "Categoria renomeada." });
+    } catch (err) {
+      console.error("[Cardapio] Unexpected rename category error:", err);
       showToast({ variant: "error", title: "Não foi possível renomear a categoria." });
+    } finally {
       setRenamingCategoryLoading(false);
-      return;
     }
-
-    setItems((prev) =>
-      prev.map((item) =>
-        item.category === oldName ? { ...item, category: trimmed } : item,
-      ),
-    );
-    setCustomCategories((prev) =>
-      prev.map((c) => (c === oldName ? trimmed : c)),
-    );
-    if (activeCategory === oldName) setActiveCategory(trimmed);
-    setRenamingCategory(null);
-    setRenamingCategoryLoading(false);
-    showToast({ variant: "success", title: "Categoria renomeada." });
   }
 
   async function handleDeleteCategory() {
@@ -302,25 +362,32 @@ export default function CardapioPage() {
     }
 
     setDeletingCategoryLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("menu_item")
-      .delete()
-      .eq("tenant_id", tenantId)
-      .eq("category", deletingCategory);
 
-    if (error) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item")
+        .delete()
+        .eq("tenant_id", tenantId)
+        .eq("category", deletingCategory);
+
+      if (error) {
+        console.error("[Cardapio] Delete category error:", error);
+        showToast({ variant: "error", title: "Não foi possível excluir a categoria." });
+        return;
+      }
+
+      setItems((prev) => prev.filter((i) => i.category !== deletingCategory));
+      setCustomCategories((prev) => prev.filter((c) => c !== deletingCategory));
+      if (activeCategory === deletingCategory) setActiveCategory(null);
+      showToast({ variant: "success", title: "Categoria excluída." });
+      setDeletingCategory(null);
+    } catch (err) {
+      console.error("[Cardapio] Unexpected delete category error:", err);
       showToast({ variant: "error", title: "Não foi possível excluir a categoria." });
+    } finally {
       setDeletingCategoryLoading(false);
-      return;
     }
-
-    setItems((prev) => prev.filter((i) => i.category !== deletingCategory));
-    setCustomCategories((prev) => prev.filter((c) => c !== deletingCategory));
-    if (activeCategory === deletingCategory) setActiveCategory(null);
-    showToast({ variant: "success", title: "Categoria excluída." });
-    setDeletingCategory(null);
-    setDeletingCategoryLoading(false);
   }
 
   function openCreateModal() {

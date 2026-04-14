@@ -40,6 +40,7 @@ export function PauseModal({ open, onClose, onConfirm, loading }: PauseModalProp
       onClose={onClose}
       title="Pausar recebimento de pedidos"
       size="md"
+      locked={loading}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>

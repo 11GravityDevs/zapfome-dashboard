@@ -57,6 +57,7 @@ export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil, 
       onClose={onClose}
       title="Ativar bot"
       size="sm"
+      locked={loading}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>

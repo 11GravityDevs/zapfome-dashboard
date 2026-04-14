@@ -3,9 +3,9 @@
 import { Clock, Info } from "lucide-react";
 import { Badge } from "@/components/badge";
 import { Card } from "@/components/card";
-import { Input } from "@/components/input";
+import { Select } from "@/components/select";
 import { Toggle } from "@/components/toggle";
-import { DAY_NAMES, type BusinessHourRow } from "@/lib/constants/settings";
+import { DAY_NAMES, TIME_OPTIONS, type BusinessHourRow } from "@/lib/constants/settings";
 
 type Props = {
   hours: BusinessHourRow[];
@@ -34,16 +34,16 @@ export function BusinessHoursSection({ hours, onChange }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-font-secondary">
+              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-font-secondary w-1/4">
                 Dia
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-font-secondary">
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-font-secondary w-1/4">
                 Abre
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-font-secondary">
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-font-secondary w-1/4">
                 Fecha
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-font-secondary">
+              <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-font-secondary w-1/4">
                 Fechado
               </th>
             </tr>
@@ -55,20 +55,24 @@ export function BusinessHoursSection({ hours, onChange }: Props) {
                   {DAY_NAMES[row.dayOfWeek]}
                 </td>
                 <td className="px-4 py-3">
-                  <Input
-                    type="time"
-                    value={row.openTime}
-                    disabled={row.isClosed}
-                    onChange={(e) => updateRow(i, { openTime: e.target.value })}
-                  />
+                  <div className="flex justify-center">
+                    <Select
+                      className="w-40"
+                      options={TIME_OPTIONS}
+                      value={row.openTime}
+                      disabled={row.isClosed}
+                      onChange={(value) => updateRow(i, { openTime: value })}
+                    />
+                  </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-(--spacing-sm)">
-                    <Input
-                      type="time"
+                  <div className="flex items-center justify-center gap-(--spacing-sm)">
+                    <Select
+                      className="w-40"
+                      options={TIME_OPTIONS}
                       value={row.closeTime}
                       disabled={row.isClosed}
-                      onChange={(e) => updateRow(i, { closeTime: e.target.value })}
+                      onChange={(value) => updateRow(i, { closeTime: value })}
                     />
                     {!row.isClosed && isNextDayClose(row.openTime, row.closeTime) && (
                       <Badge variant="orange">
@@ -78,12 +82,14 @@ export function BusinessHoursSection({ hours, onChange }: Props) {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3">
-                  <Toggle
-                    checked={row.isClosed}
-                    onCheckedChange={(val) => updateRow(i, { isClosed: val })}
-                    label={`Marcar ${DAY_NAMES[row.dayOfWeek]} como fechado`}
-                  />
+                <td className="px-4 py-3 text-center">
+                  <div className="flex justify-center">
+                    <Toggle
+                      checked={row.isClosed}
+                      onCheckedChange={(val) => updateRow(i, { isClosed: val })}
+                      label={`Marcar ${DAY_NAMES[row.dayOfWeek]} como fechado`}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

@@ -104,63 +104,76 @@ export default function HistoricoPage() {
 
     async function fetchData() {
       setLoading(true);
-      const supabase = createClient();
-      const { start, end } = getPeriodRange(period);
 
-      const searchValue = debouncedSearch.replace(/^#/, "").trim() || null;
+      try {
+        const supabase = createClient();
+        const { start, end } = getPeriodRange(period);
 
-      const [ordersRes, statsRes] = await Promise.all([
-        supabase.rpc("search_orders", {
-          p_tenant_id: tenantId,
-          p_start: start.toISOString(),
-          p_end: end.toISOString(),
-          p_search: searchValue,
-          p_status: statusFilter === "all" ? null : statusFilter,
-          p_delivery_type: typeFilter === "all" ? null : typeFilter,
-          p_payment_method: paymentFilter === "all" ? null : paymentFilter,
-          p_limit: HISTORY_PAGE_SIZE,
-          p_offset: (page - 1) * HISTORY_PAGE_SIZE,
-          p_sort_column: sortColumn,
-          p_sort_direction: sortDirection,
-        }),
-        supabase.rpc("order_history_stats", {
-          p_tenant_id: tenantId,
-          p_start: start.toISOString(),
-          p_end: end.toISOString(),
-        }),
-      ]);
+        const searchValue = debouncedSearch.replace(/^#/, "").trim() || null;
 
-      if (cancelled || id !== fetchIdRef.current) return;
+        const [ordersRes, statsRes] = await Promise.all([
+          supabase.rpc("search_orders", {
+            p_tenant_id: tenantId,
+            p_start: start.toISOString(),
+            p_end: end.toISOString(),
+            p_search: searchValue,
+            p_status: statusFilter === "all" ? null : statusFilter,
+            p_delivery_type: typeFilter === "all" ? null : typeFilter,
+            p_payment_method: paymentFilter === "all" ? null : paymentFilter,
+            p_limit: HISTORY_PAGE_SIZE,
+            p_offset: (page - 1) * HISTORY_PAGE_SIZE,
+            p_sort_column: sortColumn,
+            p_sort_direction: sortDirection,
+          }),
+          supabase.rpc("order_history_stats", {
+            p_tenant_id: tenantId,
+            p_start: start.toISOString(),
+            p_end: end.toISOString(),
+          }),
+        ]);
 
-      if (ordersRes.error || statsRes.error) {
-        showToast({
-          variant: "error",
-          title: "Não foi possível carregar o histórico de pedidos.",
-        });
+        if (cancelled || id !== fetchIdRef.current) return;
+
+        if (ordersRes.error || statsRes.error) {
+          console.error("[Historico] Fetch error:", ordersRes.error ?? statsRes.error);
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar o histórico de pedidos.",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const rawOrders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+        const validOrders = rawOrders.filter(isHistoryOrder);
+        setOrders(validOrders);
+
+        if (rawOrders.length > 0 && "total_count" in rawOrders[0]) {
+          setTotalCount(Number((rawOrders[0] as Record<string, unknown>).total_count) || 0);
+        } else {
+          setTotalCount(validOrders.length);
+        }
+
+        const rawStats = statsRes.data;
+        if (isHistoryStats(rawStats)) {
+          setStats({
+            total_orders: Number(rawStats.total_orders) || 0,
+            total_revenue: Number(rawStats.total_revenue) || 0,
+            cancelled_count: Number(rawStats.cancelled_count) || 0,
+          });
+        }
+
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[Historico] Unexpected error:", err);
+        if (!cancelled && id === fetchIdRef.current) {
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar o histórico de pedidos.",
+          });
+          setLoading(false);
+        }
       }
-
-      const rawOrders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
-      const validOrders = rawOrders.filter(isHistoryOrder);
-      setOrders(validOrders);
-
-      if (rawOrders.length > 0 && "total_count" in rawOrders[0]) {
-        setTotalCount(Number((rawOrders[0] as Record<string, unknown>).total_count) || 0);
-      } else {
-        setTotalCount(validOrders.length);
-      }
-
-      const rawStats = statsRes.data;
-      if (isHistoryStats(rawStats)) {
-        setStats({
-          total_orders: Number(rawStats.total_orders) || 0,
-          total_revenue: Number(rawStats.total_revenue) || 0,
-          cancelled_count: Number(rawStats.cancelled_count) || 0,
-        });
-      }
-
-      setLoading(false);
     }
 
     fetchData();
@@ -187,6 +200,7 @@ export default function HistoricoPage() {
       });
 
       if (error) {
+        console.error("[Historico] Export error:", error);
         showToast({ variant: "error", title: "Não foi possível exportar os pedidos." });
         return;
       }
@@ -211,14 +225,16 @@ export default function HistoricoPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-font-primary">Histórico</h1>
-        <Button
-          variant="primary"
-          leadingIcon={<Download size={16} />}
-          loading={exporting}
-          onClick={handleExport}
-        >
-          Exportar
-        </Button>
+        {totalCount > 0 && (
+          <Button
+            variant="primary"
+            leadingIcon={<Download size={16} />}
+            loading={exporting}
+            onClick={handleExport}
+          >
+            Exportar
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

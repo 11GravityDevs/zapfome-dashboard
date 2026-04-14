@@ -9,7 +9,7 @@ type NewFlavorModalProps = {
   open: boolean;
   onClose: () => void;
   existingFlavors: string[];
-  onConfirm: (name: string) => void;
+  onConfirm: (name: string) => void | Promise<void>;
 };
 
 export function NewFlavorModal({
@@ -20,19 +20,21 @@ export function NewFlavorModal({
 }: NewFlavorModalProps) {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [prevOpen, setPrevOpen] = useState(false);
 
   if (open && !prevOpen) {
     setPrevOpen(true);
     setName("");
     setError("");
+    setSaving(false);
   }
 
   if (!open && prevOpen) {
     setPrevOpen(false);
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     const trimmed = name.trim();
 
     if (!trimmed) {
@@ -45,7 +47,14 @@ export function NewFlavorModal({
       return;
     }
 
-    onConfirm(trimmed);
+    setSaving(true);
+    try {
+      await onConfirm(trimmed);
+    } catch (err) {
+      console.error("[NewFlavorModal] Unexpected error:", err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -54,12 +63,13 @@ export function NewFlavorModal({
       onClose={onClose}
       title="Novo sabor"
       size="sm"
+      locked={saving}
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm}>Adicionar</Button>
+          <Button onClick={handleConfirm} loading={saving}>Adicionar</Button>
         </>
       }
     >

@@ -28,6 +28,7 @@ export function DeleteConfirmModal({
       onClose={onClose}
       title={title}
       size="sm"
+      locked={loading}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>

@@ -11,6 +11,7 @@ export type ModalProps = {
   footer?: ReactNode;
   size?: "sm" | "md" | "lg";
   dismissOnOverlayClick?: boolean;
+  locked?: boolean;
   children?: ReactNode;
 };
 
@@ -27,12 +28,13 @@ export function Modal({
   footer,
   size = "md",
   dismissOnOverlayClick = true,
+  locked = false,
   children,
 }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !locked) onClose();
     };
     document.addEventListener("keydown", handleKey);
     const previousOverflow = document.body.style.overflow;
@@ -41,7 +43,7 @@ export function Modal({
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open, onClose]);
+  }, [open, onClose, locked]);
 
   if (!open) return null;
 
@@ -54,7 +56,7 @@ export function Modal({
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-(--bg-modal-overlay)"
-        onClick={dismissOnOverlayClick ? onClose : undefined}
+        onClick={dismissOnOverlayClick && !locked ? onClose : undefined}
       />
 
       <div
@@ -70,8 +72,9 @@ export function Modal({
             type="button"
             aria-label="Fechar"
             onClick={onClose}
+            disabled={locked}
             autoFocus
-            className="-m-2 cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover"
+            className="-m-2 cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover disabled:pointer-events-none disabled:opacity-40"
           >
             <X size={24} />
           </button>

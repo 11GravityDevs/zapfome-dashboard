@@ -27,65 +27,78 @@ export function TopBar() {
 
   async function handlePause(minutes: number | "indefinite") {
     setLoading(true);
-    const supabase = createClient();
 
-    if (minutes === "indefinite") {
-      const { error } = await supabase
-        .from("tenant")
-        .update({ paused_until: null, is_active: false })
-        .eq("id", tenantId);
+    try {
+      const supabase = createClient();
 
-      setLoading(false);
+      if (minutes === "indefinite") {
+        const { error } = await supabase
+          .from("tenant")
+          .update({ paused_until: null, is_active: false })
+          .eq("id", tenantId);
 
-      if (error) {
-        showToast({ variant: "error", title: "Erro ao pausar o bot." });
-        return;
+        if (error) {
+          console.error("[TopBar] Pause (indefinite) error:", error);
+          showToast({ variant: "error", title: "Erro ao pausar o bot." });
+          return;
+        }
+
+        showToast({ variant: "success", title: "Bot pausado até você reativar." });
+        setPausedUntil(null);
+        setIsActive(false);
+      } else {
+        const newPausedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+
+        const { error } = await supabase
+          .from("tenant")
+          .update({ paused_until: newPausedUntil })
+          .eq("id", tenantId);
+
+        if (error) {
+          console.error("[TopBar] Pause (timed) error:", error);
+          showToast({ variant: "error", title: "Erro ao pausar o bot." });
+          return;
+        }
+
+        showToast({ variant: "success", title: `Bot pausado por ${minutes} minutos.` });
+        setPausedUntil(newPausedUntil);
       }
 
-      showToast({ variant: "success", title: "Bot pausado até você reativar." });
-      setPausedUntil(null);
-      setIsActive(false);
-    } else {
-      const newPausedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
-
-      const { error } = await supabase
-        .from("tenant")
-        .update({ paused_until: newPausedUntil })
-        .eq("id", tenantId);
-
+      setPauseModalOpen(false);
+    } catch (err) {
+      console.error("[TopBar] Unexpected pause error:", err);
+      showToast({ variant: "error", title: "Erro ao pausar o bot." });
+    } finally {
       setLoading(false);
-
-      if (error) {
-        showToast({ variant: "error", title: "Erro ao pausar o bot." });
-        return;
-      }
-
-      showToast({ variant: "success", title: `Bot pausado por ${minutes} minutos.` });
-      setPausedUntil(newPausedUntil);
     }
-
-    setPauseModalOpen(false);
   }
 
   async function handleActivate() {
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("tenant")
-      .update({ paused_until: null, is_active: true })
-      .eq("id", tenantId);
 
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tenant")
+        .update({ paused_until: null, is_active: true })
+        .eq("id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[TopBar] Activate error:", error);
+        showToast({ variant: "error", title: "Erro ao ativar o bot." });
+        return;
+      }
+
+      showToast({ variant: "success", title: "Bot ativado com sucesso." });
+      setPausedUntil(null);
+      setIsActive(true);
+      setActivateModalOpen(false);
+    } catch (err) {
+      console.error("[TopBar] Unexpected activate error:", err);
       showToast({ variant: "error", title: "Erro ao ativar o bot." });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    showToast({ variant: "success", title: "Bot ativado com sucesso." });
-    setPausedUntil(null);
-    setIsActive(true);
-    setActivateModalOpen(false);
   }
 
   return (

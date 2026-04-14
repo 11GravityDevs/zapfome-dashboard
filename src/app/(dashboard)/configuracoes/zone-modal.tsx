@@ -39,9 +39,14 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
     if (!neighborhood.trim() || !city.trim() || parsedFee <= 0) return;
 
     setSaving(true);
-    await onSave(neighborhood.trim(), city.trim(), parsedFee);
-    setSaving(false);
-    onClose();
+    try {
+      await onSave(neighborhood.trim(), city.trim(), parsedFee);
+      onClose();
+    } catch (err) {
+      console.error("[ZoneModal] Unexpected save error:", err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -50,6 +55,7 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
       onClose={onClose}
       title={isEditing ? "Editar zona de entrega" : "Adicionar zona de entrega"}
       size="sm"
+      locked={saving}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={saving}>

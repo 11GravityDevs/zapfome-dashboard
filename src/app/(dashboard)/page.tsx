@@ -52,80 +52,92 @@ export default function DashboardHomePage() {
     const id = ++fetchIdRef.current;
 
     async function fetchData() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const { start, end } = getPeriodRange(period);
-      const { start: prevStart, end: prevEnd } = getPrevPeriodRange(period);
-      
-      const now = new Date();
-      const monthStart = startOfMonth(now);
-      const prevMonthStart = startOfMonth(subMonths(now, 1));
-      const prevMonthEnd = endOfDay(subDays(monthStart, 1));
+        const { start, end } = getPeriodRange(period);
+        const { start: prevStart, end: prevEnd } = getPrevPeriodRange(period);
 
-      const [currentRes, prevRes, monthRes, prevMonthRes, productsRes] = await Promise.all([
-        supabase.rpc("dashboard_kpis", {
-          p_tenant_id: tenantId,
-          p_start: start.toISOString(),
-          p_end: end.toISOString(),
-        }),
-        supabase.rpc("dashboard_kpis", {
-          p_tenant_id: tenantId,
-          p_start: prevStart.toISOString(),
-          p_end: prevEnd.toISOString(),
-        }),
-        supabase.rpc("dashboard_kpis", {
-          p_tenant_id: tenantId,
-          p_start: monthStart.toISOString(),
-          p_end: now.toISOString(),
-        }),
-        supabase.rpc("dashboard_kpis", {
-          p_tenant_id: tenantId,
-          p_start: prevMonthStart.toISOString(),
-          p_end: prevMonthEnd.toISOString(),
-        }),
-        supabase.rpc("dashboard_top_products", {
-          p_tenant_id: tenantId,
-          p_start: start.toISOString(),
-          p_end: end.toISOString(),
-          p_limit: 10,
-        }),
-      ]);
+        const now = new Date();
+        const monthStart = startOfMonth(now);
+        const prevMonthStart = startOfMonth(subMonths(now, 1));
+        const prevMonthEnd = endOfDay(subDays(monthStart, 1));
 
-      if (cancelled || id !== fetchIdRef.current) return;
+        const [currentRes, prevRes, monthRes, prevMonthRes, productsRes] = await Promise.all([
+          supabase.rpc("dashboard_kpis", {
+            p_tenant_id: tenantId,
+            p_start: start.toISOString(),
+            p_end: end.toISOString(),
+          }),
+          supabase.rpc("dashboard_kpis", {
+            p_tenant_id: tenantId,
+            p_start: prevStart.toISOString(),
+            p_end: prevEnd.toISOString(),
+          }),
+          supabase.rpc("dashboard_kpis", {
+            p_tenant_id: tenantId,
+            p_start: monthStart.toISOString(),
+            p_end: now.toISOString(),
+          }),
+          supabase.rpc("dashboard_kpis", {
+            p_tenant_id: tenantId,
+            p_start: prevMonthStart.toISOString(),
+            p_end: prevMonthEnd.toISOString(),
+          }),
+          supabase.rpc("dashboard_top_products", {
+            p_tenant_id: tenantId,
+            p_start: start.toISOString(),
+            p_end: end.toISOString(),
+            p_limit: 10,
+          }),
+        ]);
 
-      const hasError =
-        currentRes.error || prevRes.error || monthRes.error || prevMonthRes.error || productsRes.error;
+        if (cancelled || id !== fetchIdRef.current) return;
 
-      if (hasError) {
-        showToast({
-          variant: "error",
-          title: "Não foi possível carregar os dados do dashboard.",
+        const hasError =
+          currentRes.error || prevRes.error || monthRes.error || prevMonthRes.error || productsRes.error;
+
+        if (hasError) {
+          console.error("[Dashboard] KPI fetch error:", currentRes.error ?? prevRes.error ?? monthRes.error ?? prevMonthRes.error ?? productsRes.error);
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar os dados do dashboard.",
+          });
+          setLoading(false);
+          return;
+        }
+
+        const cur = currentRes.data ?? { order_count: 0, revenue: 0 };
+        const prev = prevRes.data ?? { order_count: 0, revenue: 0 };
+        const month = monthRes.data ?? { order_count: 0, revenue: 0 };
+        const prevMonth = prevMonthRes.data ?? { order_count: 0, revenue: 0 };
+
+        const orderCount = Number(cur.order_count) || 0;
+        const revenue = Number(cur.revenue) || 0;
+
+        setKpis({
+          orderCount,
+          revenue,
+          avgTicket: orderCount > 0 ? revenue / orderCount : 0,
+          monthlyRevenue: Number(month.revenue) || 0,
+          prevOrderCount: Number(prev.order_count) || 0,
+          prevRevenue: Number(prev.revenue) || 0,
+          prevMonthlyRevenue: Number(prevMonth.revenue) || 0,
         });
+
+        const rawProducts = Array.isArray(productsRes.data) ? productsRes.data : [];
+        setTopProducts(rawProducts.filter(isTopProduct));
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[Dashboard] Unexpected error:", err);
+        if (!cancelled && id === fetchIdRef.current) {
+          showToast({
+            variant: "error",
+            title: "Não foi possível carregar os dados do dashboard.",
+          });
+          setLoading(false);
+        }
       }
-
-      const cur = currentRes.data ?? { order_count: 0, revenue: 0 };
-      const prev = prevRes.data ?? { order_count: 0, revenue: 0 };
-      const month = monthRes.data ?? { order_count: 0, revenue: 0 };
-      const prevMonth = prevMonthRes.data ?? { order_count: 0, revenue: 0 };
-
-      const orderCount = Number(cur.order_count) || 0;
-      const revenue = Number(cur.revenue) || 0;
-
-      setKpis({
-        orderCount,
-        revenue,
-        avgTicket: orderCount > 0 ? revenue / orderCount : 0,
-        monthlyRevenue: Number(month.revenue) || 0,
-        prevOrderCount: Number(prev.order_count) || 0,
-        prevRevenue: Number(prev.revenue) || 0,
-        prevMonthlyRevenue: Number(prevMonth.revenue) || 0,
-      });
-
-      const rawProducts = Array.isArray(productsRes.data) ? productsRes.data : [];
-      setTopProducts(rawProducts.filter(isTopProduct));
-      setLoading(false);
     }
 
     fetchData();

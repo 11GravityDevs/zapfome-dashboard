@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { DeliveryType, OrderStatus, PaymentMethod } from "@/lib/types/database";
 import { formatEstimatedTime, formatFlavorText, getWhatsAppLink } from "@/lib/utils/orders";
 
+
 type OrderDetailItem = {
   id: string;
   quantity: number;
@@ -94,55 +95,65 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
       setOrder(null);
       setConfirmCancel(false);
       setLoading(true);
-      const supabase = createClient();
 
-      const [orderRes, settingsRes] = await Promise.all([
-        supabase
-          .from("order")
-          .select(`
-            id,
-            order_number,
-            status,
-            created_at,
-            updated_at,
-            customer (name, phone),
-            order_delivery_info (type, delivery_address, delivery_neighborhood, delivery_city),
-            order_payment (payment_method, subtotal, delivery_fee, total, paid_at),
-            order_item (
+      try {
+        const supabase = createClient();
+
+        const [orderRes, settingsRes] = await Promise.all([
+          supabase
+            .from("order")
+            .select(`
               id,
-              quantity,
-              unit_price,
-              observation,
-              menu_item (name),
-              order_item_flavor (
-                fraction,
-                menu_item_flavor (name)
+              order_number,
+              status,
+              created_at,
+              updated_at,
+              customer (name, phone),
+              order_delivery_info (type, delivery_address, delivery_neighborhood, delivery_city),
+              order_payment (payment_method, subtotal, delivery_fee, total, paid_at),
+              order_item (
+                id,
+                quantity,
+                unit_price,
+                observation,
+                menu_item (name),
+                order_item_flavor (
+                  fraction,
+                  menu_item_flavor (name)
+                )
               )
-            )
-          `)
-          .eq("id", orderId)
-          .eq("tenant_id", tenantId)
-          .single(),
-        supabase
-          .from("tenant_settings")
-          .select("pickup_time_min, pickup_time_max, delivery_time_min, delivery_time_max")
-          .eq("tenant_id", tenantId)
-          .single(),
-      ]);
+            `)
+            .eq("id", orderId)
+            .eq("tenant_id", tenantId)
+            .single(),
+          supabase
+            .from("tenant_settings")
+            .select("pickup_time_min, pickup_time_max, delivery_time_min, delivery_time_max")
+            .eq("tenant_id", tenantId)
+            .single(),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (orderRes.error) {
-        showToast({ variant: "error", title: "Não foi possível carregar o pedido." });
+        if (orderRes.error) {
+          console.error("[OrderDetail] Fetch order error:", orderRes.error);
+          showToast({ variant: "error", title: "Não foi possível carregar o pedido." });
+          setLoading(false);
+          return;
+        }
+
+        setOrder(orderRes.data as unknown as OrderDetail);
+        if (!settingsRes.error) {
+          setTimeSettings(settingsRes.data as TenantTimeSettings);
+        }
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[OrderDetail] Unexpected error:", err);
+        if (!cancelled) {
+          showToast({ variant: "error", title: "Não foi possível carregar o pedido." });
+          setLoading(false);
+        }
       }
-
-      setOrder(orderRes.data as unknown as OrderDetail);
-      if (!settingsRes.error) {
-        setTimeSettings(settingsRes.data as TenantTimeSettings);
-      }
-      setLoading(false);
     }
 
     refetchRef.current = fetchOrder;
@@ -157,24 +168,31 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
     if (!order) return;
 
     setActionLoading(true);
-    const supabase = createClient();
 
-    const { error } = await supabase
-      .from("order")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", order.id)
-      .eq("tenant_id", tenantId);
+    try {
+      const supabase = createClient();
 
-    setActionLoading(false);
+      const { error } = await supabase
+        .from("order")
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq("id", order.id)
+        .eq("tenant_id", tenantId);
 
-    if (error) {
+      if (error) {
+        console.error("[OrderDetail] Status update error:", error);
+        showToast({ variant: "error", title: "Erro ao atualizar pedido." });
+        return;
+      }
+
+      showToast({ variant: "success", title: successMessage });
+      onOrderUpdated();
+      refetchRef.current();
+    } catch (err) {
+      console.error("[OrderDetail] Unexpected status update error:", err);
       showToast({ variant: "error", title: "Erro ao atualizar pedido." });
-      return;
+    } finally {
+      setActionLoading(false);
     }
-
-    showToast({ variant: "success", title: successMessage });
-    onOrderUpdated();
-    refetchRef.current();
   }
 
   function handleMarkReady() {
@@ -260,6 +278,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
       onClose={onClose}
       title={titleContent}
       footer={footerContent}
+      locked={actionLoading}
     >
       {loading || !order ? (
         <div className="flex min-h-80 items-center justify-center">
@@ -297,46 +316,8 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
             )}
           </section>
 
-          <section>
-            <Table>
-              <THead>
-                <TR>
-                  <TH>Item</TH>
-                  <TH>Sabores / Observação</TH>
-                  <TH align="center">Qtd</TH>
-                  <TH align="right">Preço</TH>
-                </TR>
-              </THead>
-              <TBody>
-                {order.order_item.length === 0 ? (
-                  <TR>
-                    <TD colSpan={4} align="center">
-                      Nenhum item neste pedido.
-                    </TD>
-                  </TR>
-                ) : (
-                  order.order_item.map((item) => {
-                    const flavorText = formatFlavorText(item.order_item_flavor);
-                    const detail = flavorText ?? item.observation;
-                    return (
-                      <TR key={item.id}>
-                        <TD className="font-semibold">
-                          {item.menu_item?.name ?? "Item"}
-                        </TD>
-                        <TD className="text-xs text-font-secondary">
-                          {detail ?? "—"}
-                        </TD>
-                        <TD align="center">{item.quantity}</TD>
-                        <TD align="right">
-                          {formatCurrency(item.unit_price * item.quantity)}
-                        </TD>
-                      </TR>
-                    );
-                  })
-                )}
-              </TBody>
-            </Table>
-          </section>
+          <ItemsTable items={order.order_item} />
+
 
           <section className="flex flex-col gap-1">
             {isDelivery && order.order_delivery_info?.delivery_address ? (
@@ -406,5 +387,66 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
         </div>
       )}
     </Modal>
+  );
+}
+
+function ItemsTable({ items }: { items: OrderDetailItem[] }) {
+  if (items.length === 0) {
+    return (
+      <section>
+        <Table>
+          <TBody>
+            <TR>
+              <TD colSpan={3} align="center">Nenhum item neste pedido.</TD>
+            </TR>
+          </TBody>
+        </Table>
+      </section>
+    );
+  }
+
+  const hasFlavors = items.some((item) => formatFlavorText(item.order_item_flavor));
+  const hasObservations = items.some((item) => item.observation);
+
+  return (
+    <section>
+      <Table>
+        <THead>
+          <TR>
+            <TH>Item</TH>
+            {hasFlavors && <TH>Sabores</TH>}
+            {hasObservations && <TH>Observação</TH>}
+            <TH align="center">Qtd</TH>
+            <TH align="right">Preço</TH>
+          </TR>
+        </THead>
+        <TBody>
+          {items.map((item) => {
+            const flavorText = formatFlavorText(item.order_item_flavor);
+            return (
+              <TR key={item.id}>
+                <TD className="font-semibold">
+                  {item.menu_item?.name ?? "Item"}
+                </TD>
+                {hasFlavors && (
+                  <TD className="text-xs text-font-secondary">
+                    {flavorText ?? "—"}
+                  </TD>
+                )}
+                {hasObservations && (
+                  <TD className="text-xs text-font-secondary">
+                    {item.observation ?? "—"}
+                  </TD>
+                )}
+                <TD align="center">{item.quantity}</TD>
+                <TD align="right">
+                  {formatCurrency(item.unit_price * item.quantity)}
+                </TD>
+              </TR>
+            );
+          })}
+        </TBody>
+      </Table>
+    </section>
   );
 }

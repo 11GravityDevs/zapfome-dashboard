@@ -54,73 +54,82 @@ export default function ConfiguracoesPage() {
     let cancelled = false;
 
     async function fetchData() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const [tenantRes, settingsRes, hoursRes, zonesRes] = await Promise.all([
-        supabase
-          .from("tenant")
-          .select("name, phone, address, city, greeting_message, closed_message")
-          .eq("id", tenantId)
-          .single(),
-        supabase
-          .from("tenant_settings")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .single(),
-        supabase
-          .from("business_hours")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .order("day_of_week"),
-        supabase
-          .from("delivery_zone")
-          .select("*")
-          .eq("tenant_id", tenantId)
-          .order("neighborhood"),
-      ]);
+        const [tenantRes, settingsRes, hoursRes, zonesRes] = await Promise.all([
+          supabase
+            .from("tenant")
+            .select("name, phone, address, city, greeting_message, closed_message")
+            .eq("id", tenantId)
+            .single(),
+          supabase
+            .from("tenant_settings")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .single(),
+          supabase
+            .from("business_hours")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .order("day_of_week"),
+          supabase
+            .from("delivery_zone")
+            .select("*")
+            .eq("tenant_id", tenantId)
+            .order("neighborhood"),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (tenantRes.error || hoursRes.error || zonesRes.error) {
-        showToast({ variant: "error", title: "Não foi possível carregar as configurações." });
+        if (tenantRes.error || hoursRes.error || zonesRes.error) {
+          console.error("[Settings] Fetch error:", tenantRes.error ?? hoursRes.error ?? zonesRes.error);
+          showToast({ variant: "error", title: "Não foi possível carregar as configurações." });
+          setLoading(false);
+          return;
+        }
+
+        const t = tenantRes.data;
+        const s = settingsRes.data as TenantSettings | null;
+
+        const newEstablishment: EstablishmentData = {
+          name: t.name ?? "",
+          phone: t.phone ?? "",
+          address: t.address ?? "",
+          city: t.city ?? "",
+        };
+
+        const newGeneral: GeneralSettingsData = {
+          minOrderValue: s ? String(Math.round(s.min_order_value * 100)) : "",
+          deliveryTimeMin: s ? String(s.delivery_time_min) : "",
+          deliveryTimeMax: s ? String(s.delivery_time_max) : "",
+          pickupTimeMin: s ? String(s.pickup_time_min) : "",
+          pickupTimeMax: s ? String(s.pickup_time_max) : "",
+          greetingMessage: t.greeting_message ?? "",
+          closedMessage: t.closed_message ?? "",
+        };
+
+        const newHours =
+          hoursRes.data && hoursRes.data.length > 0
+            ? toBusinessHourRows(hoursRes.data)
+            : buildDefaultBusinessHours();
+
+        setInitialSnapshot(
+          JSON.stringify({ hours: newHours, general: newGeneral, establishment: newEstablishment }),
+        );
+
+        setEstablishment(newEstablishment);
+        setGeneral(newGeneral);
+        setHours(newHours);
+        setZones(zonesRes.data ?? []);
         setLoading(false);
-        return;
+      } catch (err) {
+        console.error("[Settings] Unexpected error:", err);
+        if (!cancelled) {
+          showToast({ variant: "error", title: "Não foi possível carregar as configurações." });
+          setLoading(false);
+        }
       }
-
-      const t = tenantRes.data;
-      const s = settingsRes.data as TenantSettings | null;
-
-      const newEstablishment: EstablishmentData = {
-        name: t.name ?? "",
-        phone: t.phone ?? "",
-        address: t.address ?? "",
-        city: t.city ?? "",
-      };
-
-      const newGeneral: GeneralSettingsData = {
-        minOrderValue: s ? String(Math.round(s.min_order_value * 100)) : "",
-        deliveryTimeMin: s ? String(s.delivery_time_min) : "",
-        deliveryTimeMax: s ? String(s.delivery_time_max) : "",
-        pickupTimeMin: s ? String(s.pickup_time_min) : "",
-        pickupTimeMax: s ? String(s.pickup_time_max) : "",
-        greetingMessage: t.greeting_message ?? "",
-        closedMessage: t.closed_message ?? "",
-      };
-
-      const newHours =
-        hoursRes.data && hoursRes.data.length > 0
-          ? toBusinessHourRows(hoursRes.data)
-          : buildDefaultBusinessHours();
-
-      setInitialSnapshot(
-        JSON.stringify({ hours: newHours, general: newGeneral, establishment: newEstablishment }),
-      );
-
-      setEstablishment(newEstablishment);
-      setGeneral(newGeneral);
-      setHours(newHours);
-      setZones(zonesRes.data ?? []);
-      setLoading(false);
     }
 
     fetchData();
@@ -129,59 +138,66 @@ export default function ConfiguracoesPage() {
 
   async function handleSave() {
     setSaving(true);
-    const supabase = createClient();
 
-    const minOrderValue = (Number(general.minOrderValue) || 0) / 100;
-    const deliveryTimeMin = parseInt(general.deliveryTimeMin) || 0;
-    const deliveryTimeMax = parseInt(general.deliveryTimeMax) || 0;
-    const pickupTimeMin = parseInt(general.pickupTimeMin) || 0;
-    const pickupTimeMax = parseInt(general.pickupTimeMax) || 0;
+    try {
+      const supabase = createClient();
 
-    const [hoursRes, settingsRes, tenantRes] = await Promise.all([
-      supabase.from("business_hours").upsert(
-        hours.map((day) => ({
-          tenant_id: tenantId,
-          day_of_week: day.dayOfWeek,
-          open_time: day.isClosed ? null : day.openTime,
-          close_time: day.isClosed ? null : day.closeTime,
-          is_closed: day.isClosed,
-        })),
-        { onConflict: "tenant_id,day_of_week" },
-      ),
-      supabase.from("tenant_settings").upsert(
-        {
-          tenant_id: tenantId,
-          min_order_value: minOrderValue,
-          delivery_time_min: deliveryTimeMin,
-          delivery_time_max: deliveryTimeMax,
-          pickup_time_min: pickupTimeMin,
-          pickup_time_max: pickupTimeMax,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "tenant_id" },
-      ),
-      supabase
-        .from("tenant")
-        .update({
-          name: establishment.name,
-          phone: establishment.phone,
-          address: establishment.address,
-          city: establishment.city,
-          greeting_message: general.greetingMessage,
-          closed_message: general.closedMessage,
-        })
-        .eq("id", tenantId),
-    ]);
+      const minOrderValue = (Number(general.minOrderValue) || 0) / 100;
+      const deliveryTimeMin = parseInt(general.deliveryTimeMin) || 0;
+      const deliveryTimeMax = Math.max(parseInt(general.deliveryTimeMax) || 0, deliveryTimeMin);
+      const pickupTimeMin = parseInt(general.pickupTimeMin) || 0;
+      const pickupTimeMax = Math.max(parseInt(general.pickupTimeMax) || 0, pickupTimeMin);
 
-    setSaving(false);
+      const [hoursRes, settingsRes, tenantRes] = await Promise.all([
+        supabase.from("business_hours").upsert(
+          hours.map((day) => ({
+            tenant_id: tenantId,
+            day_of_week: day.dayOfWeek,
+            open_time: day.isClosed ? null : day.openTime,
+            close_time: day.isClosed ? null : day.closeTime,
+            is_closed: day.isClosed,
+          })),
+          { onConflict: "tenant_id,day_of_week" },
+        ),
+        supabase.from("tenant_settings").upsert(
+          {
+            tenant_id: tenantId,
+            min_order_value: minOrderValue,
+            delivery_time_min: deliveryTimeMin,
+            delivery_time_max: deliveryTimeMax,
+            pickup_time_min: pickupTimeMin,
+            pickup_time_max: pickupTimeMax,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "tenant_id" },
+        ),
+        supabase
+          .from("tenant")
+          .update({
+            name: establishment.name,
+            phone: establishment.phone,
+            address: establishment.address,
+            city: establishment.city,
+            greeting_message: general.greetingMessage,
+            closed_message: general.closedMessage,
+          })
+          .eq("id", tenantId),
+      ]);
 
-    if (hoursRes.error || settingsRes.error || tenantRes.error) {
+      if (hoursRes.error || settingsRes.error || tenantRes.error) {
+        console.error("[Settings] Save error:", hoursRes.error ?? settingsRes.error ?? tenantRes.error);
+        showToast({ variant: "error", title: "Erro ao salvar configurações." });
+        return;
+      }
+
+      setInitialSnapshot(JSON.stringify({ hours, general, establishment }));
+      showToast({ variant: "success", title: "Configurações salvas com sucesso." });
+    } catch (err) {
+      console.error("[Settings] Unexpected save error:", err);
       showToast({ variant: "error", title: "Erro ao salvar configurações." });
-      return;
+    } finally {
+      setSaving(false);
     }
-
-    setInitialSnapshot(JSON.stringify({ hours, general, establishment }));
-    showToast({ variant: "success", title: "Configurações salvas com sucesso." });
   }
 
   if (loading) {
@@ -210,7 +226,7 @@ export default function ConfiguracoesPage() {
 
       <div className="flex justify-end pb-(--spacing-md)">
         <Button
-          variant="green"
+          variant="primary"
           size="lg"
           leadingIcon={<Save size={20} />}
           disabled={!isDirty}
