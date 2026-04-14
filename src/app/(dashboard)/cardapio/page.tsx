@@ -31,6 +31,8 @@ export default function CardapioPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<MenuItemWithFlavors | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deletingFlavor, setDeletingFlavor] = useState<MenuItemFlavor | null>(null);
+  const [deletingFlavorLoading, setDeletingFlavorLoading] = useState(false);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -204,6 +206,14 @@ export default function CardapioPage() {
           : i,
       ),
     );
+  }
+
+  async function handleConfirmFlavorDelete() {
+    if (!deletingFlavor) return;
+    setDeletingFlavorLoading(true);
+    await handleRemoveFlavor(deletingFlavor);
+    setDeletingFlavor(null);
+    setDeletingFlavorLoading(false);
   }
 
   async function handleRemoveFlavor(flavor: MenuItemFlavor) {
@@ -401,7 +411,7 @@ export default function CardapioPage() {
                     onDelete={() => setDeletingItem(item)}
                     onFlavorToggle={handleToggleFlavor}
                     onFlavorAdd={handleAddFlavor}
-                    onFlavorRemove={handleRemoveFlavor}
+                    onFlavorRemove={(flavor) => setDeletingFlavor(flavor)}
                   />
                 ))}
               </div>
@@ -428,6 +438,15 @@ export default function CardapioPage() {
         loading={deleting}
         onConfirm={handleConfirmDelete}
         onClose={() => setDeletingItem(null)}
+      />
+
+      <DeleteConfirmModal
+        open={Boolean(deletingFlavor)}
+        itemName={deletingFlavor?.name ?? ""}
+        loading={deletingFlavorLoading}
+        onConfirm={handleConfirmFlavorDelete}
+        onClose={() => setDeletingFlavor(null)}
+        title="Excluir sabor"
       />
 
       <NewCategoryModal

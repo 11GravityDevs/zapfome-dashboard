@@ -48,7 +48,7 @@ export default function PedidosPage() {
           order_item (quantity, menu_item (name))
         `)
         .eq("tenant_id", tenantId)
-        .in("status", ["paid", "pending_delivery_payment", "preparing", "ready", "done", "out_for_delivery"])
+        .in("status", ["preparing", "ready", "done", "out_for_delivery"])
         .gte("created_at", getTodayStart())
         .order("created_at", { ascending: true });
 

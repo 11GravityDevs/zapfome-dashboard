@@ -21,7 +21,6 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
   const thresholdMs = READY_THRESHOLD_HOURS * 60 * 60 * 1000;
 
   const grouped: GroupedOrders = {
-    to_accept: [],
     preparing: [],
     ready: [],
     out_for_delivery: [],
@@ -29,9 +28,7 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
   };
 
   for (const order of orders) {
-    if (order.status === "paid" || order.status === "pending_delivery_payment") {
-      grouped.to_accept.push(order);
-    } else if (order.status === "preparing") {
+    if (order.status === "preparing") {
       grouped.preparing.push(order);
     } else if (order.status === "out_for_delivery") {
       const updatedAt = new Date(order.updated_at).getTime();

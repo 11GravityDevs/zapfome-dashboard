@@ -9,6 +9,7 @@ type DeleteConfirmModalProps = {
   loading: boolean;
   onConfirm: () => void;
   onClose: () => void;
+  title?: string;
 };
 
 export function DeleteConfirmModal({
@@ -17,12 +18,13 @@ export function DeleteConfirmModal({
   loading,
   onConfirm,
   onClose,
+  title = "Excluir item",
 }: DeleteConfirmModalProps) {
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Excluir item"
+      title={title}
       size="sm"
       footer={
         <>

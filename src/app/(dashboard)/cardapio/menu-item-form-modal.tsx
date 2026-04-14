@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Modal } from "@/components/modal";
@@ -26,6 +27,7 @@ type FormData = {
   category: string;
   allowsFlavors: boolean;
   maxFlavors: string;
+  flavors: string[];
 };
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
@@ -58,11 +60,15 @@ export function MenuItemFormModal({
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
   const [prevOpen, setPrevOpen] = useState(false);
+  const [newFlavorName, setNewFlavorName] = useState("");
+  const [newFlavorError, setNewFlavorError] = useState("");
 
   if (open && !prevOpen) {
     setPrevOpen(true);
     setForm(getInitialForm(item));
     setErrors({});
+    setNewFlavorName("");
+    setNewFlavorError("");
   }
   if (!open && prevOpen) {
     setPrevOpen(false);
@@ -79,6 +85,25 @@ export function MenuItemFormModal({
     }
   }
 
+  function handleAddModalFlavor() {
+    const trimmed = newFlavorName.trim();
+    if (!trimmed) {
+      setNewFlavorError("Nome do sabor é obrigatório.");
+      return;
+    }
+    if (form.flavors.some((f) => f.toLowerCase() === trimmed.toLowerCase())) {
+      setNewFlavorError("Esse sabor já existe.");
+      return;
+    }
+    updateField("flavors", [...form.flavors, trimmed]);
+    setNewFlavorName("");
+    setNewFlavorError("");
+  }
+
+  function handleRemoveModalFlavor(index: number) {
+    updateField("flavors", form.flavors.filter((_, i) => i !== index));
+  }
+
   function validate(): FormErrors {
     const errs: FormErrors = {};
     if (!form.name.trim()) errs.name = "Nome é obrigatório.";
@@ -86,6 +111,9 @@ export function MenuItemFormModal({
     if (!form.category.trim()) errs.category = "Categoria é obrigatória.";
     if (form.allowsFlavors && (!form.maxFlavors || Number(form.maxFlavors) < 1)) {
       errs.maxFlavors = "Mínimo de 1 sabor.";
+    }
+    if (form.allowsFlavors && !isEditing && form.flavors.length === 0) {
+      errs.flavors = "Adicione pelo menos um sabor.";
     }
     return errs;
   }
@@ -124,20 +152,31 @@ export function MenuItemFormModal({
 
       showToast({ variant: "success", title: "Item atualizado." });
     } else {
-      const { error } = await supabase
+      const { data: newItem, error } = await supabase
         .from("menu_item")
         .insert({
           ...payload,
           tenant_id: tenantId,
           is_available: true,
         })
-        .select()
+        .select("id")
         .single();
 
       if (error) {
         showToast({ variant: "error", title: "Não foi possível criar o item." });
         setSaving(false);
         return;
+      }
+
+      if (form.flavors.length > 0) {
+        const flavorRows = form.flavors.map((name, idx) => ({
+          tenant_id: tenantId,
+          menu_item_id: newItem.id,
+          name,
+          is_available: true,
+          sort_order: idx,
+        }));
+        await supabase.from("menu_item_flavor").insert(flavorRows);
       }
 
       showToast({ variant: "success", title: "Item criado." });
@@ -229,6 +268,55 @@ export function MenuItemFormModal({
             error={errors.maxFlavors}
           />
         )}
+
+        {form.allowsFlavors && !isEditing && (
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium text-font-secondary">Sabores</label>
+
+            {form.flavors.map((flavor, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 rounded-md border border-border bg-bg-secondary px-3 py-2"
+              >
+                <span className="flex-1 text-sm text-font-primary">{flavor}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveModalFlavor(index)}
+                  className="cursor-pointer text-font-secondary transition-colors hover:text-accent-red"
+                  aria-label={`Remover ${flavor}`}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+
+            <div className="flex items-start gap-2">
+              <Input
+                placeholder="Nome do sabor"
+                value={newFlavorName}
+                onChange={(e) => {
+                  setNewFlavorName(e.target.value);
+                  if (newFlavorError) setNewFlavorError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddModalFlavor();
+                  }
+                }}
+                error={newFlavorError}
+                className="flex-1"
+              />
+              <Button variant="secondary" size="sm" onClick={handleAddModalFlavor} className="mt-0.5 h-11">
+                Adicionar
+              </Button>
+            </div>
+
+            {errors.flavors && (
+              <p className="text-xs font-medium text-accent-red">{errors.flavors}</p>
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -243,6 +331,7 @@ function getInitialForm(item: MenuItemWithFlavors | null): FormData {
       category: item.category,
       allowsFlavors: item.allows_flavors,
       maxFlavors: String(item.max_flavors),
+      flavors: [],
     };
   }
 
@@ -253,5 +342,6 @@ function getInitialForm(item: MenuItemWithFlavors | null): FormData {
     category: "",
     allowsFlavors: false,
     maxFlavors: "1",
+    flavors: [],
   };
 }

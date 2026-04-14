@@ -11,47 +11,59 @@ import { createClient } from "@/lib/supabase/client";
 import { PauseModal } from "@/app/(dashboard)/pedidos/pause-modal";
 import { ActivateModal } from "@/app/(dashboard)/pedidos/activate-modal";
 
-const FAR_FUTURE = "2099-12-31T23:59:59Z";
-
 export function TopBar() {
   const { tenant, tenantId } = useTenant();
   const { showToast } = useToast();
 
   const [pausedUntil, setPausedUntil] = useState(tenant.paused_until);
+  const [isActive, setIsActive] = useState(tenant.is_active);
   const [pauseModalOpen, setPauseModalOpen] = useState(false);
   const [activateModalOpen, setActivateModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const paused = !!pausedUntil;
+  const paused = !!pausedUntil || !isActive;
 
-  const botActive = tenant.is_active && !paused;
+  const botActive = isActive && !pausedUntil;
 
   async function handlePause(minutes: number | "indefinite") {
     setLoading(true);
-    const newPausedUntil =
-      minutes === "indefinite"
-        ? FAR_FUTURE
-        : new Date(Date.now() + minutes * 60 * 1000).toISOString();
-
     const supabase = createClient();
-    const { error } = await supabase
-      .from("tenant")
-      .update({ paused_until: newPausedUntil })
-      .eq("id", tenantId);
 
-    setLoading(false);
+    if (minutes === "indefinite") {
+      const { error } = await supabase
+        .from("tenant")
+        .update({ paused_until: null, is_active: false })
+        .eq("id", tenantId);
 
-    if (error) {
-      showToast({ variant: "error", title: "Erro ao pausar o bot." });
-      return;
+      setLoading(false);
+
+      if (error) {
+        showToast({ variant: "error", title: "Erro ao pausar o bot." });
+        return;
+      }
+
+      showToast({ variant: "success", title: "Bot pausado até você reativar." });
+      setPausedUntil(null);
+      setIsActive(false);
+    } else {
+      const newPausedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+
+      const { error } = await supabase
+        .from("tenant")
+        .update({ paused_until: newPausedUntil })
+        .eq("id", tenantId);
+
+      setLoading(false);
+
+      if (error) {
+        showToast({ variant: "error", title: "Erro ao pausar o bot." });
+        return;
+      }
+
+      showToast({ variant: "success", title: `Bot pausado por ${minutes} minutos.` });
+      setPausedUntil(newPausedUntil);
     }
 
-    const message =
-      minutes === "indefinite"
-        ? "Bot pausado até você reativar."
-        : `Bot pausado por ${minutes} minutos.`;
-    showToast({ variant: "success", title: message });
-    setPausedUntil(newPausedUntil);
     setPauseModalOpen(false);
   }
 
@@ -60,7 +72,7 @@ export function TopBar() {
     const supabase = createClient();
     const { error } = await supabase
       .from("tenant")
-      .update({ paused_until: null })
+      .update({ paused_until: null, is_active: true })
       .eq("id", tenantId);
 
     setLoading(false);
@@ -72,6 +84,7 @@ export function TopBar() {
 
     showToast({ variant: "success", title: "Bot ativado com sucesso." });
     setPausedUntil(null);
+    setIsActive(true);
     setActivateModalOpen(false);
   }
 
@@ -129,6 +142,7 @@ export function TopBar() {
         onConfirm={handleActivate}
         loading={loading}
         pausedUntil={pausedUntil}
+        isActive={isActive}
       />
     </>
   );

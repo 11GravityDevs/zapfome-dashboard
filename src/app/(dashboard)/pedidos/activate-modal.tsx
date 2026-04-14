@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 
-const FAR_FUTURE = "2099-12-31T23:59:59Z";
-
 type ActivateModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   loading?: boolean;
   pausedUntil: string | null;
+  isActive: boolean;
 };
 
 function formatTimeLeft(ms: number): string {
@@ -25,16 +24,15 @@ function formatTimeLeft(ms: number): string {
   return `${seconds}s`;
 }
 
-function computeTimeLeft(pausedUntil: string | null, isIndefinite: boolean): string | null {
-  if (!pausedUntil || isIndefinite) return null;
+function computeTimeLeft(pausedUntil: string): string | null {
   const ms = new Date(pausedUntil).getTime() - Date.now();
   return ms > 0 ? formatTimeLeft(ms) : null;
 }
 
-export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil }: ActivateModalProps) {
-  const isIndefinite = pausedUntil === FAR_FUTURE;
-  const shouldCount = open && !!pausedUntil && !isIndefinite;
-  const currentTimeLeft = shouldCount ? computeTimeLeft(pausedUntil, false) : null;
+export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil, isActive }: ActivateModalProps) {
+  const isIndefinite = !isActive && !pausedUntil;
+  const shouldCount = open && !!pausedUntil;
+  const currentTimeLeft = shouldCount ? computeTimeLeft(pausedUntil) : null;
   const [timeLeft, setTimeLeft] = useState(currentTimeLeft);
 
   if (timeLeft !== currentTimeLeft && !shouldCount) {
@@ -48,7 +46,7 @@ export function ActivateModal({ open, onClose, onConfirm, loading, pausedUntil }
     if (!shouldCount) return;
 
     const interval = setInterval(() => {
-      setTimeLeft(computeTimeLeft(pausedUntil!, false));
+      setTimeLeft(computeTimeLeft(pausedUntil!));
     }, 1000);
     return () => clearInterval(interval);
   }, [shouldCount, pausedUntil]);

@@ -177,10 +177,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
     refetchRef.current();
   }
 
-  function handleAccept() {
-    handleStatusUpdate("preparing", "Pedido aceito!");
-  }
-
   function handleMarkReady() {
     handleStatusUpdate("done", "Pedido marcado como pronto!");
   }
@@ -212,34 +208,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
           Reimprimir balcão
         </Button>
       </div>
-
-      {(order.status === "paid" || order.status === "pending_delivery_payment") && (
-        <div className="flex items-center justify-end gap-4">
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={handleCancel}
-            loading={actionLoading && confirmCancel}
-          >
-            {confirmCancel ? "Sim, cancelar" : "Cancelar pedido"}
-          </Button>
-          {confirmCancel && (
-            <Button variant="secondary" size="md" onClick={() => setConfirmCancel(false)}>
-              Não
-            </Button>
-          )}
-          {!confirmCancel && (
-            <Button
-              variant="green"
-              size="md"
-              onClick={handleAccept}
-              loading={actionLoading && !confirmCancel}
-            >
-              Aceitar pedido
-            </Button>
-          )}
-        </div>
-      )}
 
       {order.status === "preparing" && (
         <div className="flex items-center justify-end gap-4">

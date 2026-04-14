@@ -36,9 +36,9 @@ export function MenuItemRow({
   return (
     <div>
       {showDivider && <div className="border-t border-border-light" />}
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex items-center gap-3 p-4">
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
               <p className="text-base font-semibold text-font-primary">{item.name}</p>
               {item.description && (

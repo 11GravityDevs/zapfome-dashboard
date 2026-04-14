@@ -76,7 +76,7 @@ export function Select({
   }, [open, focusedIndex]);
 
   function toggle() {
-    if (disabled) return;
+    if (disabled || options.length === 0) return;
     setOpen((prev) => {
       if (!prev) {
         const idx = options.findIndex((o) => o.value === value);

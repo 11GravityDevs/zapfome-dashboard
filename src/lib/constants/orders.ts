@@ -2,7 +2,7 @@ import type { BadgeVariant } from "@/components/badge";
 import type { ButtonVariant } from "@/components/button";
 import type { OrderStatus } from "@/lib/types/database";
 
-export type KanbanColumnId = "to_accept" | "preparing" | "ready" | "out_for_delivery" | "finished";
+export type KanbanColumnId = "preparing" | "ready" | "out_for_delivery" | "finished";
 
 export type KanbanColumnConfig = {
   id: KanbanColumnId;
@@ -16,16 +16,7 @@ export type KanbanColumnConfig = {
 };
 
 export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
-  {
-    id: "to_accept",
-    title: "Para aceitar",
-    stripColor: "bg-accent-blue",
-    badgeVariant: "blue",
-    statuses: ["paid", "pending_delivery_payment"],
-    actionLabel: "Aceitar",
-    actionVariant: "blue",
-  },
-  {
+{
     id: "preparing",
     title: "Em preparo",
     stripColor: "bg-accent-orange",
