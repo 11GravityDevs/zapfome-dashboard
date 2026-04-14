@@ -33,7 +33,7 @@ Horizontal row of dropdown filters below the date/search bar:
 |---|---|
 | Todos os status | Todos, Pago, Em preparo, Finalizado, Cancelado |
 | Todos os tipos | Todos, Entrega, Retirada |
-| Todos os pagamentos | Todos, Pix, Na entrega |
+| Todos os pagamentos | Todos, Pix, Pagamento na entrega |
 
 Each filter is a `<select>` dropdown. Changing any filter re-fetches the data.
 
@@ -59,7 +59,7 @@ Full-width `Table` component:
 | Pedido a | Date/time `DD/MM/YYYY HH:mm` (14/400) | left | yes (default: desc) |
 | Tipo | `Badge` — "Entrega" (blue) or "Retirada" (neutral) | center | yes |
 | Total | `R$ 85,00` (14/600) | right | yes |
-| Pagamento | `Badge` — "Pix" (green) or "Na entrega" (neutral) | center | yes |
+| Pagamento | `Badge` — "Pix" (green) or "Pagamento na entrega" (neutral) | center | yes |
 | Status | `Badge` — colored by status | center | yes |
 
 **Status badge mapping:**

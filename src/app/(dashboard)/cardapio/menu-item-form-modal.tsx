@@ -214,9 +214,9 @@ export function MenuItemFormModal({
           <Toggle
             checked={form.allowsFlavors}
             onCheckedChange={(v) => updateField("allowsFlavors", v)}
-            label="Permite sabores?"
+            label="Permitir sabores"
           />
-          <span className="text-sm text-font-primary">Permite sabores?</span>
+          <span className="text-sm text-font-primary">Permitir sabores</span>
         </div>
 
         {form.allowsFlavors && (

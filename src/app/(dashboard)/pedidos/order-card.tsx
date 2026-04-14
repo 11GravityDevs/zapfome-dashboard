@@ -79,7 +79,7 @@ export function OrderCard({
         )}
         {payment && (
           <Badge variant={payment.payment_method === "pix" ? "green" : "neutral"}>
-            {payment.payment_method === "pix" ? "Pix" : "Na entrega"}
+            {payment.payment_method === "pix" ? "Pix" : "Pagamento na entrega"}
           </Badge>
         )}
       </div>

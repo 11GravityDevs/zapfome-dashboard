@@ -258,7 +258,7 @@ Each spec lists the tokens that compose the component. Build new variants by com
   - Novo → `--accent-blue-light` bg, `--accent-blue` text
   - Em preparo / Aguardando ação → `--accent-orange-light` bg, `--accent-orange` text
   - Cancelado / Erro → `--accent-red-light` bg, `--accent-red` text
-  - Na entrega / Neutro → `--bg-secondary` bg, `--font-secondary` text
+  - Pagamento na entrega / Neutro → `--bg-secondary` bg, `--font-secondary` text
 
 ### Table
 - Header row: `--font-secondary` 12/600 UPPERCASE, padding `12 16`, bottom border `--border`.
@@ -340,7 +340,7 @@ Floating notification for backend/submit feedback. Appears top-right, stacked do
 | Cancelled | `Cancelado` | `--accent-red` / `--error-*` |
 | Needs action | `Aguardando ação` | `--accent-orange` |
 | Paid (Pix) | `Pix` / `Pago` | `--accent-green` |
-| Cash on delivery | `Na entrega` | `--bg-secondary` / `--font-secondary` |
+| Cash on delivery | `Pagamento na entrega` | `--bg-secondary` / `--font-secondary` |
 | Bot active | `Bot ativo` | `--accent-green` |
 | Bot inactive | `Bot inativo` | `--font-secondary` |
 | Item available | toggle on | `--brand-primary` |

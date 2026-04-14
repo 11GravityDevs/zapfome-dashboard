@@ -84,7 +84,7 @@ Every status indicator must use `<Badge>` from `@/components/badge`:
 - `variant="orange"` — Em preparo, Aguardando acao
 - `variant="green"` — Pago, Pix, Finalizado, Bot ativo
 - `variant="red"` — Cancelado, Erro
-- `variant="neutral"` — Na entrega, default/unknown
+- `variant="neutral"` — Pagamento na entrega, default/unknown
 
 ### Other components
 - Card containers -> `<Card>` from `@/components/card`
@@ -106,7 +106,7 @@ Cross-reference any status-related UI against this mapping:
 | Cancelled | Cancelado | red (accent-red) |
 | Needs action | Aguardando acao | orange (accent-orange) |
 | Paid (Pix) | Pix / Pago | green (accent-green) |
-| Cash on delivery | Na entrega | neutral |
+| Cash on delivery | Pagamento na entrega | neutral |
 | Bot active | Bot ativo | green (accent-green) |
 | Bot inactive | Bot inativo | neutral |
 

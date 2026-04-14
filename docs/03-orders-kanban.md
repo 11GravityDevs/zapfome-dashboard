@@ -56,7 +56,7 @@ Each card in the kanban shows (from top to bottom):
 - Order number: `#42` (14/700, `--font-primary`)
 - Payment badge: `Badge` component
   - `Pix` → green variant (if `order_payment.payment_method = 'pix'`)
-  - `Na entrega` → neutral variant (if `payment_method = 'on_delivery'`)
+  - `Pagamento na entrega` → neutral variant (if `payment_method = 'on_delivery'`)
 
 **Customer row:**
 - Customer name (14/600, `--font-primary`)

@@ -311,7 +311,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
               )}
               {payment && (
                 <Badge variant={payment.payment_method === "pix" ? "green" : "neutral"}>
-                  {payment.payment_method === "pix" ? "Pix" : "Na entrega"}
+                  {payment.payment_method === "pix" ? "Pix" : "Pagamento na entrega"}
                 </Badge>
               )}
             </div>
@@ -368,12 +368,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
                 )}
               </TBody>
             </Table>
-
-            {payment && (
-              <p className="mt-4 text-right text-sm font-semibold text-font-primary">
-                Itens {formatCurrency(payment.subtotal)}
-              </p>
-            )}
           </section>
 
           <section className="flex flex-col gap-1">

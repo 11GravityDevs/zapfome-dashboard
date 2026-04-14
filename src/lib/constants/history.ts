@@ -21,7 +21,7 @@ export const TYPE_FILTER_OPTIONS: SelectOption[] = [
 export const PAYMENT_FILTER_OPTIONS: SelectOption[] = [
   { value: "all", label: "Todos os pagamentos" },
   { value: "pix", label: "Pix" },
-  { value: "on_delivery", label: "Na entrega" },
+  { value: "on_delivery", label: "Pagamento na entrega" },
 ];
 
 export const STATUS_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> = {
@@ -43,7 +43,7 @@ export const DELIVERY_TYPE_BADGE_MAP: Record<string, { label: string; variant: B
 
 export const PAYMENT_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> = {
   pix: { label: "Pix", variant: "green" },
-  on_delivery: { label: "Na entrega", variant: "neutral" },
+  on_delivery: { label: "Pagamento na entrega", variant: "neutral" },
 };
 
 export const HISTORY_PAGE_SIZE = 20;
