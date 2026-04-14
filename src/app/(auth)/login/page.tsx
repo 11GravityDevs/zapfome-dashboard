@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-(--spacing-md)">
-      <div className="flex w-full max-w-[440px] flex-col items-center">
+      <div className="flex w-full max-w-110 flex-col items-center">
         <Logo imageSize={80} fontSize={24} />
 
         <div className="mt-(--spacing-xl) w-full rounded-xl bg-bg-card p-(--spacing-xl) shadow-card">
@@ -80,7 +80,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-(--spacing-lg) text-center text-xs font-normal text-font-secondary">
-            Zapfome &copy; 2026
+            ZapFome &copy; 2026
           </p>
         </div>
       </div>

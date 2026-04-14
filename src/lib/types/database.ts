@@ -37,7 +37,6 @@ export type TenantMenuImage = {
   id: string;
   tenant_id: string;
   image_url: string;
-  sort_order: number;
 };
 
 export type BusinessHours = {
@@ -59,7 +58,6 @@ export type MenuItem = {
   allows_flavors: boolean;
   max_flavors: number;
   is_available: boolean;
-  sort_order: number;
   created_at: string;
 };
 
@@ -68,8 +66,8 @@ export type MenuItemFlavor = {
   tenant_id: string;
   menu_item_id: string;
   name: string;
+  price: number | null;
   is_available: boolean;
-  sort_order: number;
 };
 
 export type UpsellRule = {
@@ -94,7 +92,7 @@ export type CustomerAddress = {
   tenant_id: string;
   customer_id: string;
   address: string | null;
-  neighborhood: string;
+  neighborhood: string | null;
   city: string;
   address_complement: string | null;
   created_at: string;

@@ -80,9 +80,8 @@ export default function ConfiguracoesPage() {
             .order("neighborhood"),
           supabase
             .from("tenant_menu_image")
-            .select("image_url, sort_order")
-            .eq("tenant_id", tenantId)
-            .order("sort_order"),
+            .select("image_url")
+            .eq("tenant_id", tenantId),
         ]);
 
         if (cancelled) return;
@@ -219,10 +218,9 @@ export default function ConfiguracoesPage() {
           .eq("id", tenantId),
         menuImageUrls.length > 0
           ? supabase.from("tenant_menu_image").insert(
-              menuImageUrls.map((url, i) => ({
+              menuImageUrls.map((url) => ({
                 tenant_id: tenantId,
                 image_url: url,
-                sort_order: i,
               })),
             )
           : Promise.resolve({ error: null }),

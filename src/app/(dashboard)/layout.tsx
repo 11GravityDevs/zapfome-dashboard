@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     return (
       <FullPageMessage
         title="Conta desativada"
-        body="Sua conta está desativada. Entre em contato com o suporte da Zapfome para reativar o acesso."
+        body="Sua conta está desativada. Entre em contato com o suporte da ZapFome para reativar o acesso."
       />
     );
   }

@@ -353,13 +353,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
                       .join(" — ")}
                   </p>
                 </div>
-
-                {payment && payment.delivery_fee > 0 && (
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm text-font-secondary">Taxa de entrega:</p>
-                    <p className="text-sm text-font-primary">{formatCurrency(payment.total)}</p>
-                  </div>
-                )}
               </div>
             ) : (
               <>

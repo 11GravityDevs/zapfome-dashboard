@@ -21,6 +21,11 @@ type MenuItemFormModalProps = {
   onSaved: () => void;
 };
 
+type FlavorEntry = {
+  name: string;
+  priceCents: string;
+};
+
 type FormData = {
   name: string;
   description: string;
@@ -28,7 +33,7 @@ type FormData = {
   category: string;
   allowsFlavors: boolean;
   maxFlavors: string;
-  flavors: string[];
+  flavors: FlavorEntry[];
 };
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
@@ -54,6 +59,7 @@ export function MenuItemFormModal({
   const [saving, setSaving] = useState(false);
   const [prevOpen, setPrevOpen] = useState(false);
   const [newFlavorName, setNewFlavorName] = useState("");
+  const [newFlavorPrice, setNewFlavorPrice] = useState("");
   const [newFlavorError, setNewFlavorError] = useState("");
 
   if (open && !prevOpen) {
@@ -61,6 +67,7 @@ export function MenuItemFormModal({
     setForm(getInitialForm(item));
     setErrors({});
     setNewFlavorName("");
+    setNewFlavorPrice("");
     setNewFlavorError("");
   }
   if (!open && prevOpen) {
@@ -84,12 +91,13 @@ export function MenuItemFormModal({
       setNewFlavorError("Nome do sabor é obrigatório.");
       return;
     }
-    if (form.flavors.some((f) => f.toLowerCase() === trimmed.toLowerCase())) {
+    if (form.flavors.some((f) => f.name.toLowerCase() === trimmed.toLowerCase())) {
       setNewFlavorError("Esse sabor já existe.");
       return;
     }
-    updateField("flavors", [...form.flavors, trimmed]);
+    updateField("flavors", [...form.flavors, { name: trimmed, priceCents: newFlavorPrice }]);
     setNewFlavorName("");
+    setNewFlavorPrice("");
     setNewFlavorError("");
   }
 
@@ -173,12 +181,12 @@ export function MenuItemFormModal({
         }
 
         if (form.flavors.length > 0) {
-          const flavorRows = form.flavors.map((name, idx) => ({
+          const flavorRows = form.flavors.map((flavor) => ({
             tenant_id: tenantId,
             menu_item_id: newItem.id,
-            name,
+            name: flavor.name,
+            price: Number(flavor.priceCents) > 0 ? Number(flavor.priceCents) / 100 : null,
             is_available: true,
-            sort_order: idx,
           }));
 
           const { error: flavorError } = await supabase.from("menu_item_flavor").insert(flavorRows);
@@ -299,12 +307,19 @@ export function MenuItemFormModal({
                   key={index}
                   className="flex w-fit items-center gap-2 rounded-md border border-border bg-bg-secondary px-3 py-2"
                 >
-                  <span className="text-sm text-font-primary">{flavor}</span>
+                  <span className="text-sm text-font-primary">
+                    {flavor.name}
+                    {Number(flavor.priceCents) > 0 && (
+                      <span className="ml-1 text-xs text-font-secondary">
+                        (R$ {(Number(flavor.priceCents) / 100).toFixed(2).replace(".", ",")})
+                      </span>
+                    )}
+                  </span>
                   <button
                     type="button"
                     onClick={() => handleRemoveModalFlavor(index)}
                     className="cursor-pointer text-font-secondary transition-colors hover:text-accent-red"
-                    aria-label={`Remover ${flavor}`}
+                    aria-label={`Remover ${flavor.name}`}
                   >
                     <X size={14} />
                   </button>
@@ -329,6 +344,12 @@ export function MenuItemFormModal({
                     }
                   }}
                   error={newFlavorError}
+                />
+              </div>
+              <div className="w-40">
+                <CurrencyInput
+                  value={newFlavorPrice}
+                  onChange={setNewFlavorPrice}
                 />
               </div>
               <Button
@@ -371,6 +392,6 @@ function getInitialForm(item: MenuItemWithFlavors | null): FormData {
     category: "",
     allowsFlavors: false,
     maxFlavors: "1",
-    flavors: [],
+    flavors: [] as FlavorEntry[],
   };
 }

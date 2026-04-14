@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Toggle } from "@/components/toggle";
-
 import { formatCurrency } from "@/lib/format";
 import type { MenuItemFlavor } from "@/lib/types/database";
+import { EditFlavorModal } from "./edit-flavor-modal";
 import { NewFlavorModal } from "./new-flavor-modal";
 import type { MenuItemWithFlavors } from "./page";
 
@@ -17,7 +17,8 @@ type MenuItemRowProps = {
   onEdit: () => void;
   onDelete: () => void;
   onFlavorToggle: (flavor: MenuItemFlavor) => void;
-  onFlavorAdd: (itemId: string, name: string) => Promise<void>;
+  onFlavorAdd: (itemId: string, name: string, price: number | null) => Promise<void>;
+  onFlavorEdit: (flavorId: string, name: string, price: number | null) => Promise<void>;
   onFlavorRemove: (flavor: MenuItemFlavor) => void;
 };
 
@@ -29,9 +30,11 @@ export function MenuItemRow({
   onDelete,
   onFlavorToggle,
   onFlavorAdd,
+  onFlavorEdit,
   onFlavorRemove,
 }: MenuItemRowProps) {
   const [flavorModalOpen, setFlavorModalOpen] = useState(false);
+  const [editingFlavor, setEditingFlavor] = useState<MenuItemFlavor | null>(null);
 
   return (
     <div>
@@ -82,13 +85,28 @@ export function MenuItemRow({
                     key={flavor.id}
                     className="flex items-center justify-between border-t border-border-light py-2 pl-4"
                   >
-                    <span className="text-sm text-font-primary">{flavor.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-font-primary">{flavor.name}</span>
+                      {flavor.price != null && (
+                        <span className="text-xs font-medium text-font-secondary">
+                          {formatCurrency(flavor.price)}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3">
                       <Toggle
                         checked={flavor.is_available}
                         onCheckedChange={() => onFlavorToggle(flavor)}
                         label={flavor.is_available ? "Desativar sabor" : "Ativar sabor"}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setEditingFlavor(flavor)}
+                        className="cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover hover:text-brand-primary"
+                        aria-label={`Editar ${flavor.name}`}
+                      >
+                        <Pencil size={14} />
+                      </button>
                       <button
                         type="button"
                         onClick={() => onFlavorRemove(flavor)}
@@ -114,9 +132,20 @@ export function MenuItemRow({
                   open={flavorModalOpen}
                   onClose={() => setFlavorModalOpen(false)}
                   existingFlavors={item.menu_item_flavor.map((f) => f.name)}
-                  onConfirm={async (name) => {
-                    await onFlavorAdd(item.id, name);
+                  onConfirm={async (name, price) => {
+                    await onFlavorAdd(item.id, name, price);
                     setFlavorModalOpen(false);
+                  }}
+                />
+
+                <EditFlavorModal
+                  open={editingFlavor !== null}
+                  onClose={() => setEditingFlavor(null)}
+                  flavor={editingFlavor}
+                  existingFlavors={item.menu_item_flavor.map((f) => f.name)}
+                  onConfirm={async (flavorId, name, price) => {
+                    await onFlavorEdit(flavorId, name, price);
+                    setEditingFlavor(null);
                   }}
                 />
               </div>

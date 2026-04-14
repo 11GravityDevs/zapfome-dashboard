@@ -129,8 +129,6 @@ export default function HistoricoPage() {
             p_payment_method: paymentFilter === "all" ? null : paymentFilter,
             p_limit: HISTORY_PAGE_SIZE,
             p_offset: (page - 1) * HISTORY_PAGE_SIZE,
-            p_sort_column: sortColumn,
-            p_sort_direction: sortDirection,
           }),
           supabase.rpc("order_history_stats", {
             p_tenant_id: tenantId,

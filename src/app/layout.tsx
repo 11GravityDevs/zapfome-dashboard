@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Zapfome",
+  title: "ZapFome",
   description:
-    "Painel do lojista Zapfome — gerencie pedidos, cardápio e configurações do seu restaurante.",
+    "Painel do lojista ZapFome — gerencie pedidos, cardápio e configurações do seu restaurante.",
 };
 
 export default function RootLayout({

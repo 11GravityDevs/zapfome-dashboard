@@ -56,8 +56,7 @@ export default function CardapioPage() {
         const { data, error } = await supabase
           .from("menu_item")
           .select("*, menu_item_flavor (*)")
-          .eq("tenant_id", tenantId)
-          .order("sort_order", { ascending: true });
+          .eq("tenant_id", tenantId);
 
         if (cancelled || id !== fetchIdRef.current) return;
 
@@ -226,12 +225,7 @@ export default function CardapioPage() {
     }
   }
 
-  async function handleAddFlavor(itemId: string, name: string) {
-    const item = items.find((i) => i.id === itemId);
-    const nextSortOrder = item
-      ? Math.max(0, ...item.menu_item_flavor.map((f) => f.sort_order)) + 1
-      : 0;
-
+  async function handleAddFlavor(itemId: string, name: string, price: number | null) {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -240,8 +234,8 @@ export default function CardapioPage() {
           tenant_id: tenantId,
           menu_item_id: itemId,
           name,
+          price,
           is_available: true,
-          sort_order: nextSortOrder,
         })
         .select()
         .single();
@@ -262,6 +256,36 @@ export default function CardapioPage() {
     } catch (err) {
       console.error("[Cardapio] Unexpected add flavor error:", err);
       showToast({ variant: "error", title: "Não foi possível adicionar o sabor." });
+    }
+  }
+
+  async function handleEditFlavor(flavorId: string, name: string, price: number | null) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("menu_item_flavor")
+        .update({ name, price })
+        .eq("id", flavorId)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        console.error("[Cardapio] Edit flavor error:", error);
+        showToast({ variant: "error", title: "Não foi possível atualizar o sabor." });
+        return;
+      }
+
+      setItems((prev) =>
+        prev.map((item) => ({
+          ...item,
+          menu_item_flavor: item.menu_item_flavor.map((f) =>
+            f.id === flavorId ? { ...f, name, price } : f,
+          ),
+        })),
+      );
+      showToast({ variant: "success", title: "Sabor atualizado." });
+    } catch (err) {
+      console.error("[Cardapio] Unexpected edit flavor error:", err);
+      showToast({ variant: "error", title: "Não foi possível atualizar o sabor." });
     }
   }
 
@@ -524,6 +548,7 @@ export default function CardapioPage() {
                     onDelete={() => setDeletingItem(item)}
                     onFlavorToggle={handleToggleFlavor}
                     onFlavorAdd={handleAddFlavor}
+                    onFlavorEdit={handleEditFlavor}
                     onFlavorRemove={(flavor) => setDeletingFlavor(flavor)}
                   />
                 ))}
