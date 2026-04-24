@@ -8,6 +8,7 @@ export type ModalProps = {
   open: boolean;
   onClose: () => void;
   title: ReactNode;
+  headerActions?: ReactNode;
   footer?: ReactNode;
   size?: "sm" | "md" | "lg";
   dismissOnOverlayClick?: boolean;
@@ -25,6 +26,7 @@ export function Modal({
   open,
   onClose,
   title,
+  headerActions,
   footer,
   size = "md",
   dismissOnOverlayClick = true,
@@ -66,18 +68,21 @@ export function Modal({
           sizeClasses[size],
         )}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-border px-8 py-6">
+        <header className="flex items-center justify-between gap-4 border-b border-border px-8 py-6">
           <h2 className="text-lg font-semibold text-font-primary">{title}</h2>
-          <button
-            type="button"
-            aria-label="Fechar"
-            onClick={onClose}
-            disabled={locked}
-            autoFocus
-            className="-m-2 cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover disabled:pointer-events-none disabled:opacity-40"
-          >
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-3">
+            {headerActions}
+            <button
+              type="button"
+              aria-label="Fechar"
+              onClick={onClose}
+              disabled={locked}
+              autoFocus
+              className="-m-2 cursor-pointer rounded-md p-2 text-font-secondary transition-colors hover:bg-bg-hover disabled:pointer-events-none disabled:opacity-40"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto px-8 py-6">{children}</div>

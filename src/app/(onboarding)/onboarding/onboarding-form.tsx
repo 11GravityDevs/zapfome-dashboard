@@ -7,6 +7,7 @@ import { Button } from "@/components/button";
 import { useToast } from "@/contexts/toast-context";
 import { buildDefaultBusinessHours, type BusinessHourRow } from "@/lib/constants/settings";
 import { createClient } from "@/lib/supabase/client";
+import type { DeliveryZone } from "@/lib/types/database";
 import {
   validateOnboardingData,
   hasErrors,
@@ -21,6 +22,7 @@ import {
   type GeneralSettingsData,
 } from "@/app/(dashboard)/configuracoes/general-settings-section";
 import { BusinessHoursSection } from "@/app/(dashboard)/configuracoes/business-hours-section";
+import { DeliveryZonesSection } from "@/app/(dashboard)/configuracoes/delivery-zones-section";
 import { MenuImageSection } from "@/components/menu-image-section";
 
 export function OnboardingForm() {
@@ -46,6 +48,7 @@ export function OnboardingForm() {
   });
 
   const [hours, setHours] = useState<BusinessHourRow[]>(buildDefaultBusinessHours());
+  const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [menuImageUrls, setMenuImageUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -106,6 +109,11 @@ export function OnboardingForm() {
           is_closed: h.isClosed,
         })),
         p_menu_image_urls: menuImageUrls,
+        p_delivery_zones: zones.map((z) => ({
+          neighborhood: z.neighborhood,
+          city: z.city,
+          fee: z.fee,
+        })),
       });
 
       if (error) {
@@ -156,6 +164,8 @@ export function OnboardingForm() {
       <GeneralSettingsSection data={general} onChange={setGeneral} />
 
       <BusinessHoursSection hours={hours} onChange={setHours} />
+
+      <DeliveryZonesSection zones={zones} onZonesChange={setZones} />
 
       <div className="flex justify-end pb-(--spacing-md)">
         <Button

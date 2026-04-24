@@ -30,7 +30,7 @@ export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
     title: "Prontos",
     stripColor: "bg-accent-green",
     badgeVariant: "green",
-    statuses: ["done", "ready"],
+    statuses: ["ready"],
     actionLabel: "Entrega",
     actionVariant: "green",
   },

@@ -10,12 +10,13 @@ type KanbanColumnProps = {
   config: KanbanColumnConfig;
   orders: KanbanOrder[];
   onCardClick?: (order: KanbanOrder) => void;
+  onOrderUpdated?: () => void;
 };
 
-export function KanbanColumn({ config, orders, onCardClick }: KanbanColumnProps) {
+export function KanbanColumn({ config, orders, onCardClick, onOrderUpdated }: KanbanColumnProps) {
   return (
-    <div className="flex w-[340px] shrink-0 flex-col">
-      <div className={cn("h-[5px] rounded-t-md", config.stripColor)} />
+    <div className="flex w-85 shrink-0 flex-col">
+      <div className={cn("h-1.25 rounded-t-md", config.stripColor)} />
 
       <div className="flex items-center gap-2 border-x bg-bg-card border-b border-border shadow-soft px-(--spacing-md) py-3">
         <span className="text-sm font-bold text-font-primary">{config.title}</span>
@@ -30,6 +31,7 @@ export function KanbanColumn({ config, orders, onCardClick }: KanbanColumnProps)
             accentColor={config.stripColor}
             faded={config.faded}
             onClick={() => onCardClick?.(order)}
+            onOrderUpdated={onOrderUpdated}
           />
         ))}
 

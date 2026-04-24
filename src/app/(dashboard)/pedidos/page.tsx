@@ -7,7 +7,12 @@ import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
 import { formatTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
-import { groupOrdersByColumn, getTodayStart, type KanbanOrder } from "@/lib/utils/orders";
+import {
+  getTodayStart,
+  groupOrdersByColumn,
+  normalizeKanbanOrder,
+  type KanbanOrder,
+} from "@/lib/utils/orders";
 import { KanbanColumn } from "./kanban-column";
 import { OrderDetailModal } from "./order-detail-modal";
 
@@ -68,7 +73,8 @@ export default function PedidosPage() {
           return;
         }
 
-        setOrders((data as unknown as KanbanOrder[]) ?? []);
+        const rawOrders = (data as unknown as KanbanOrder[]) ?? [];
+        setOrders(rawOrders.map(normalizeKanbanOrder));
         setLastUpdated(new Date());
         setLoading(false);
       } catch (err) {
@@ -162,6 +168,7 @@ export default function PedidosPage() {
                 config={col}
                 orders={grouped[col.id]}
                 onCardClick={(order) => setSelectedOrderId(order.id)}
+                onOrderUpdated={() => refetchRef.current()}
               />
             ))}
           </div>

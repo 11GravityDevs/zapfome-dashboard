@@ -437,14 +437,12 @@ export default function HistoricoPage() {
             </TBody>
           </Table>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-font-secondary">
-                Mostrando {rangeStart}-{rangeEnd} de {totalCount} pedidos
-              </span>
-              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-font-secondary">
+              Mostrando {rangeStart}-{rangeEnd} de {totalCount} pedidos
+            </span>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
         </>
       )}
     </div>

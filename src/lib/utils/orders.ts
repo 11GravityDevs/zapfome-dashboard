@@ -37,13 +37,10 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
       } else {
         grouped.finished.push(order);
       }
-    } else if (order.status === "done" || order.status === "ready") {
-      const updatedAt = new Date(order.updated_at).getTime();
-      if (now - updatedAt < thresholdMs) {
-        grouped.ready.push(order);
-      } else {
-        grouped.finished.push(order);
-      }
+    } else if (order.status === "ready") {
+      grouped.ready.push(order);
+    } else if (order.status === "done") {
+      grouped.finished.push(order);
     }
   }
 
@@ -52,6 +49,20 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
 
 export function getTodayStart(): string {
   return startOfDay(new Date()).toISOString();
+}
+
+export function normalizeOne<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+export function normalizeKanbanOrder(raw: KanbanOrder): KanbanOrder {
+  return {
+    ...raw,
+    customer: normalizeOne(raw.customer),
+    order_delivery_info: normalizeOne(raw.order_delivery_info),
+    order_payment: normalizeOne(raw.order_payment),
+  };
 }
 
 export function formatFlavorText(

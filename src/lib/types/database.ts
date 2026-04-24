@@ -4,14 +4,15 @@ export type Tenant = {
   id: string;
   name: string;
   phone: string;
-  evolution_instance_id: string;
-  evolution_api_key: string;
+  evolution_instance_id: string | null;
+  evolution_api_key: string | null;
   address: string;
   city: string;
   greeting_message: string;
   closed_message: string;
   paused_until: string | null;
   is_active: boolean;
+  print_agent_api_key: string;
   created_at: string;
 };
 
@@ -30,6 +31,7 @@ export type TenantPayment = {
   id: string;
   tenant_id: string;
   mercadopago_access_token: string;
+  mercadopago_webhook_secret: string | null;
   pix_expiration_minutes: number;
 };
 
@@ -58,6 +60,7 @@ export type MenuItem = {
   allows_flavors: boolean;
   max_flavors: number;
   is_available: boolean;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -118,8 +121,8 @@ export type OrderStatus =
   | "paid"
   | "preparing"
   | "ready"
-  | "done"
   | "out_for_delivery"
+  | "done"
   | "payment_expired"
   | "cancelled";
 
@@ -148,6 +151,7 @@ export type OrderDeliveryInfo = {
   delivery_address: string | null;
   delivery_neighborhood: string | null;
   delivery_city: string | null;
+  delivery_complement: string | null;
 };
 
 export type OrderPayment = {
@@ -157,7 +161,7 @@ export type OrderPayment = {
   subtotal: number;
   delivery_fee: number;
   total: number;
-  pix_payment_id: string | null;
+  mp_order_id: string | null;
   pix_qr_code: string | null;
   pix_expires_at: string | null;
   paid_at: string | null;
@@ -184,5 +188,17 @@ export type TenantUser = {
   tenant_id: string;
   user_id: string;
   role: string;
+  created_at: string;
+};
+
+export type LlmCost = {
+  id: string;
+  tenant_id: string;
+  phone: string;
+  order_id: string | null;
+  state: string | null;
+  calls: number;
+  labels: string[];
+  total_cost_micro_usd: number;
   created_at: string;
 };

@@ -14,7 +14,7 @@ import type { DeliveryZone } from "@/lib/types/database";
 import { ZoneModal } from "./zone-modal";
 
 type Props = {
-  tenantId: string;
+  tenantId?: string;
   zones: DeliveryZone[];
   onZonesChange: (zones: DeliveryZone[]) => void;
 };
@@ -26,7 +26,23 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
   const [deletingZone, setDeletingZone] = useState<DeliveryZone | null>(null);
   const [deletingLoading, setDeletingLoading] = useState(false);
 
+  const isLocalMode = !tenantId;
+
   async function handleAddZone(neighborhood: string, city: string, fee: number) {
+    if (isLocalMode) {
+      const localZone: DeliveryZone = {
+        id: crypto.randomUUID(),
+        tenant_id: "",
+        neighborhood,
+        city,
+        fee,
+        is_active: true,
+      };
+
+      onZonesChange([...zones, localZone]);
+      return;
+    }
+
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -51,6 +67,15 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
 
   async function handleEditZone(neighborhood: string, city: string, fee: number) {
     if (!editingZone) return;
+
+    if (isLocalMode) {
+      onZonesChange(
+        zones.map((z) => (z.id === editingZone.id ? { ...z, neighborhood, city, fee } : z)),
+      );
+
+      setEditingZone(null);
+      return;
+    }
 
     try {
       const supabase = createClient();
@@ -80,6 +105,8 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
   async function handleToggleActive(zone: DeliveryZone) {
     const newValue = !zone.is_active;
     onZonesChange(zones.map((z) => (z.id === zone.id ? { ...z, is_active: newValue } : z)));
+
+    if (isLocalMode) return;
 
     try {
       const supabase = createClient();
@@ -111,6 +138,13 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
 
   async function handleDelete() {
     if (!deletingZone) return;
+
+    if (isLocalMode) {
+      onZonesChange(zones.filter((z) => z.id !== deletingZone.id));
+      setDeletingZone(null);
+      return;
+    }
+
     setDeletingLoading(true);
 
     try {

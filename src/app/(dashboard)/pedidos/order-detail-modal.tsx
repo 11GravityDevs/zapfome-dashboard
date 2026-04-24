@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Printer } from "lucide-react";
 import { Badge, type BadgeVariant } from "@/components/badge";
 import { Button } from "@/components/button";
@@ -13,7 +13,12 @@ import { useToast } from "@/contexts/toast-context";
 import { formatCurrency, formatPhone } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryType, OrderStatus, PaymentMethod } from "@/lib/types/database";
-import { formatEstimatedTime, formatFlavorText, getWhatsAppLink } from "@/lib/utils/orders";
+import {
+  formatEstimatedTime,
+  formatFlavorText,
+  getWhatsAppLink,
+  normalizeOne,
+} from "@/lib/utils/orders";
 
 type OrderDetailItem = {
   id: string;
@@ -81,9 +86,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
   const [timeSettings, setTimeSettings] = useState<TenantTimeSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
-
-  const refetchRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!orderId) return;
@@ -92,7 +94,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
 
     async function fetchOrder() {
       setOrder(null);
-      setConfirmCancel(false);
       setLoading(true);
 
       try {
@@ -143,7 +144,22 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
           return;
         }
 
-        setOrder(orderRes.data as unknown as OrderDetail);
+        const raw = orderRes.data as unknown as OrderDetail & {
+          customer: OrderDetail["customer"] | OrderDetail["customer"][];
+          order_delivery_info:
+            | OrderDetail["order_delivery_info"]
+            | NonNullable<OrderDetail["order_delivery_info"]>[];
+          order_payment: OrderDetail["order_payment"] | NonNullable<OrderDetail["order_payment"]>[];
+        };
+
+        const normalized: OrderDetail = {
+          ...raw,
+          customer: normalizeOne(raw.customer),
+          order_delivery_info: normalizeOne(raw.order_delivery_info),
+          order_payment: normalizeOne(raw.order_payment),
+        };
+
+        setOrder(normalized);
         if (!settingsRes.error) {
           setTimeSettings(settingsRes.data as TenantTimeSettings);
         }
@@ -157,7 +173,6 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
       }
     }
 
-    refetchRef.current = fetchOrder;
     fetchOrder();
 
     return () => {
@@ -187,7 +202,7 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
 
       showToast({ variant: "success", title: successMessage });
       onOrderUpdated();
-      refetchRef.current();
+      onClose();
     } catch (err) {
       console.error("[OrderDetail] Unexpected status update error:", err);
       showToast({ variant: "error", title: "Erro ao atualizar pedido." });
@@ -197,16 +212,15 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
   }
 
   function handleMarkReady() {
-    handleStatusUpdate("done", "Pedido marcado como pronto!");
+    handleStatusUpdate("ready", "Pedido marcado como pronto!");
   }
 
-  function handleCancel() {
-    if (!confirmCancel) {
-      setConfirmCancel(true);
-      return;
-    }
-    handleStatusUpdate("cancelled", "Pedido cancelado.");
-    setConfirmCancel(false);
+  function handleMarkOutForDelivery() {
+    handleStatusUpdate("out_for_delivery", "Pedido saiu para entrega!");
+  }
+
+  function handleFinalize() {
+    handleStatusUpdate("done", "Pedido finalizado!");
   }
 
   const isDelivery = order?.order_delivery_info?.type === "delivery";
@@ -216,6 +230,22 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
     timeSettings && order?.order_delivery_info
       ? formatEstimatedTime(timeSettings, order.order_delivery_info.type)
       : null;
+
+  const primaryAction = (() => {
+    if (!order) return null;
+    if (order.status === "preparing") {
+      return { label: "Marcar como pronto", onClick: handleMarkReady };
+    }
+    if (order.status === "ready") {
+      return isDelivery
+        ? { label: "Saiu para entrega", onClick: handleMarkOutForDelivery }
+        : { label: "Finalizar pedido", onClick: handleFinalize };
+    }
+    if (order.status === "out_for_delivery") {
+      return { label: "Finalizar pedido", onClick: handleFinalize };
+    }
+    return null;
+  })();
 
   const footerContent = order ? (
     <div className="flex w-full flex-col gap-4">
@@ -240,33 +270,16 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
         </Button>
       </div>
 
-      {order.status === "preparing" && (
+      {primaryAction && (
         <div className="flex items-center justify-end gap-4">
           <Button
-            variant="secondary"
+            variant="primary"
             size="md"
-            onClick={handleCancel}
-            loading={actionLoading && confirmCancel}
+            onClick={primaryAction.onClick}
+            loading={actionLoading}
           >
-            {confirmCancel ? "Sim, cancelar" : "Cancelar pedido"}
+            {primaryAction.label}
           </Button>
-
-          {confirmCancel && (
-            <Button variant="secondary" size="md" onClick={() => setConfirmCancel(false)}>
-              Não
-            </Button>
-          )}
-
-          {!confirmCancel && (
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleMarkReady}
-              loading={actionLoading && !confirmCancel}
-            >
-              Marcar como pronto
-            </Button>
-          )}
         </div>
       )}
 
