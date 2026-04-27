@@ -21,7 +21,7 @@ export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
     title: "Em preparo",
     stripColor: "bg-accent-orange",
     badgeVariant: "orange",
-    statuses: ["preparing"],
+    statuses: ["paid", "pending_delivery_payment", "preparing"],
     actionLabel: "Pronto",
     actionVariant: "orange",
   },

@@ -5,11 +5,10 @@ import { Trash2 } from "lucide-react";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
-import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
+import { updateOrderStatus } from "@/lib/api/orders";
 import { cn } from "@/lib/cn";
 import { formatCurrency, timeAgo } from "@/lib/format";
-import { createClient } from "@/lib/supabase/client";
 import { formatItemsPreview, type KanbanOrder } from "@/lib/utils/orders";
 
 type OrderCardProps = {
@@ -21,7 +20,6 @@ type OrderCardProps = {
 };
 
 export function OrderCard({ order, accentColor, faded, onClick, onOrderUpdated }: OrderCardProps) {
-  const { tenantId } = useTenant();
   const { showToast } = useToast();
 
   const deliveryInfo = order.order_delivery_info;
@@ -36,19 +34,7 @@ export function OrderCard({ order, accentColor, faded, onClick, onOrderUpdated }
   async function handleConfirmCancel() {
     setCancelLoading(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("order")
-        .update({ status: "cancelled", updated_at: new Date().toISOString() })
-        .eq("id", order.id)
-        .eq("tenant_id", tenantId);
-
-      if (error) {
-        console.error("[OrderCard] Cancel error:", error);
-        showToast({ variant: "error", title: "Erro ao cancelar pedido." });
-        return;
-      }
-
+      await updateOrderStatus(order.id, "cancelled");
       showToast({ variant: "success", title: "Pedido cancelado." });
       setShowCancelConfirm(false);
       onOrderUpdated?.();

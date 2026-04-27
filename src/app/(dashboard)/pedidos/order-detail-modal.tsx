@@ -10,6 +10,7 @@ import { Spinner } from "@/components/spinner";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/table";
 import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
+import { updateOrderStatus, type DashboardOrderStatus } from "@/lib/api/orders";
 import { formatCurrency, formatPhone } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryType, OrderStatus, PaymentMethod } from "@/lib/types/database";
@@ -180,25 +181,13 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
     };
   }, [orderId, tenantId, showToast]);
 
-  async function handleStatusUpdate(newStatus: OrderStatus, successMessage: string) {
+  async function handleStatusUpdate(newStatus: DashboardOrderStatus, successMessage: string) {
     if (!order) return;
 
     setActionLoading(true);
 
     try {
-      const supabase = createClient();
-
-      const { error } = await supabase
-        .from("order")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq("id", order.id)
-        .eq("tenant_id", tenantId);
-
-      if (error) {
-        console.error("[OrderDetail] Status update error:", error);
-        showToast({ variant: "error", title: "Erro ao atualizar pedido." });
-        return;
-      }
+      await updateOrderStatus(order.id, newStatus);
 
       showToast({ variant: "success", title: successMessage });
       onOrderUpdated();
@@ -233,7 +222,11 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
 
   const primaryAction = (() => {
     if (!order) return null;
-    if (order.status === "preparing") {
+    if (
+      order.status === "preparing" ||
+      order.status === "paid" ||
+      order.status === "pending_delivery_payment"
+    ) {
       return { label: "Marcar como pronto", onClick: handleMarkReady };
     }
     if (order.status === "ready") {

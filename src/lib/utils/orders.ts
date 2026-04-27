@@ -28,7 +28,11 @@ export function groupOrdersByColumn(orders: KanbanOrder[]): GroupedOrders {
   };
 
   for (const order of orders) {
-    if (order.status === "preparing") {
+    if (
+      order.status === "preparing" ||
+      order.status === "paid" ||
+      order.status === "pending_delivery_payment"
+    ) {
       grouped.preparing.push(order);
     } else if (order.status === "out_for_delivery") {
       const updatedAt = new Date(order.updated_at).getTime();
