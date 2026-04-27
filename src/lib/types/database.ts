@@ -73,6 +73,20 @@ export type MenuItemFlavor = {
   is_available: boolean;
 };
 
+export type MenuItemAddon = {
+  id: string;
+  tenant_id: string;
+  name: string;
+  price: number;
+  is_available: boolean;
+  created_at: string;
+};
+
+export type MenuItemAddonLink = {
+  menu_item_id: string;
+  menu_item_addon_id: string;
+};
+
 export type UpsellRule = {
   id: string;
   tenant_id: string;
@@ -105,7 +119,7 @@ export type CustomerAddress = {
 export type DeliveryZone = {
   id: string;
   tenant_id: string;
-  neighborhood: string;
+  neighborhood: string | null;
   city: string;
   fee: number;
   is_active: boolean;
@@ -181,6 +195,14 @@ export type OrderItemFlavor = {
   order_item_id: string;
   menu_item_flavor_id: string;
   fraction: number;
+};
+
+export type OrderItemAddon = {
+  id: string;
+  order_item_id: string;
+  menu_item_addon_id: string;
+  quantity: number;
+  unit_price: number;
 };
 
 export type TenantUser = {
