@@ -25,7 +25,7 @@ Read each changed file and check against these rules, in priority order:
 ### CRITICAL — Supabase tenant scoping (security)
 
 Every Supabase query must be scoped to the tenant:
-- Server Components: must call `getCurrentTenant()` from `@/lib/tenant`, handle all four resolution states (`unauthenticated`, `no_tenant`, `inactive`, `ok`), and pass `tenantId` to all `.from()` queries via `.eq('tenant_id', tenantId)` or RPC functions with `p_tenant_id`.
+- Server Components: must call `getCurrentTenant()` from `@/lib/tenant`, handle all four resolution states (`unauthenticated`, `no_tenant`, `ok`), and pass `tenantId` to all `.from()` queries via `.eq('tenant_id', tenantId)` or RPC functions with `p_tenant_id`.
 - Client Components: must get `tenantId` from `useTenant()` hook (from `@/contexts/tenant-context`).
 - RPC calls: must pass `p_tenant_id` parameter.
 - Flag any query that touches the database without a tenant_id filter.

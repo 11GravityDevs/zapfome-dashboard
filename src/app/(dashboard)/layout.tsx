@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { Logo } from "@/components/logo";
 import { Sidebar } from "@/components/sidebar";
 import { TopBar } from "@/components/top-bar";
 import { TenantProvider } from "@/contexts/tenant-context";
@@ -17,15 +16,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     redirect("/onboarding");
   }
 
-  if (resolution.status === "inactive") {
-    return (
-      <FullPageMessage
-        title="Conta desativada"
-        body="Sua conta está desativada. Entre em contato com o suporte da ZapFome para reativar o acesso."
-      />
-    );
-  }
-
   const { tenant, tenantId, tenantUser } = resolution;
 
   return (
@@ -38,20 +28,5 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         </div>
       </div>
     </TenantProvider>
-  );
-}
-
-function FullPageMessage({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-secondary px-(--spacing-md)">
-      <div className="flex w-full max-w-md flex-col items-center">
-        <Logo imageSize={80} fontSize={24} />
-
-        <div className="mt-(--spacing-xl) w-full rounded-xl border border-border bg-bg-card p-(--spacing-xl) text-center shadow-card">
-          <h1 className="text-xl font-bold text-font-primary">{title}</h1>
-          <p className="mt-(--spacing-sm) text-sm text-font-secondary">{body}</p>
-        </div>
-      </div>
-    </div>
   );
 }

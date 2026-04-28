@@ -4,7 +4,6 @@ import type { Tenant, TenantUser } from "@/lib/types/database";
 export type TenantResolution =
   | { status: "unauthenticated" }
   | { status: "no_tenant"; userId: string }
-  | { status: "inactive"; tenant: Tenant; tenantUser: TenantUser }
   | { status: "ok"; tenant: Tenant; tenantId: string; tenantUser: TenantUser };
 
 export async function getCurrentTenant(): Promise<TenantResolution> {
@@ -45,10 +44,6 @@ export async function getCurrentTenant(): Promise<TenantResolution> {
 
     if (tenantError || !tenant) {
       return { status: "no_tenant", userId: user.id };
-    }
-
-    if (!tenant.is_active) {
-      return { status: "inactive", tenant, tenantUser };
     }
 
     return { status: "ok", tenant, tenantId: tenant.id, tenantUser };
