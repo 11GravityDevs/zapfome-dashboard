@@ -314,6 +314,62 @@ Floating notification for backend/submit feedback. Appears top-right, stacked do
 - Center/right: bot status pill (`--accent-green` dot + "Bot ativo" 12/600).
 - Far right: avatar (32×32, radius `--radius-full`) + user menu chevron.
 
+### Pagamentos — card de conexão OAuth
+Used on the `/pagamentos` route to surface the OAuth connection state of a payment provider (Mercado Pago today; Stripe / others later). Mirrors the structure of the WhatsApp `/conexao` card so the two onboarding surfaces feel consistent.
+
+- **Page header.** `<h1>` "Pagamentos" 20/700 `--font-primary` + subtitle 14/normal `--font-secondary` ("Conecte seu Mercado Pago para receber via Pix pelo bot."). Gap 24 between header and card.
+- **Card container.** Generic Card (`--bg-card`, radius `--radius-lg`, Soft shadow), `padding --spacing-xl` (32 — same as `/conexao`'s `padding="xl"`), `max-width 28rem` (`max-w-md`), centered horizontally. One sub-view rendered at a time based on state.
+
+**Sub-view: Loading (initial fetch).**
+- Centered column, vertical gap `--spacing-md` (16), padding-y `--spacing-lg` (24).
+- `<Spinner size="lg">` + caption "Carregando status…" 14/normal `--font-secondary`.
+
+**Sub-view: Disconnected.**
+- Centered column, vertical gap `--spacing-md` (16), text-align center, padding-y `--spacing-lg` (24).
+- Round badge 56×56, radius `--radius-full`, fill `--bg-secondary`, containing `CreditCard` Lucide icon 32, color `--font-secondary`.
+- Title 18/600 `--font-primary` "Mercado Pago não conectado".
+- Body 14/normal `--font-secondary` "Autorize sua conta para o bot poder gerar Pix automaticamente."
+- `<Button variant="primary">` "Conectar Mercado Pago" with leading `Link2` icon 20. Full-width inside the card. Triggers a top-level redirect to the OAuth URL returned by the backend — never a popup.
+
+**Sub-view: Connected.**
+- Header strip: round badge 56×56, radius `--radius-full`, fill `--accent-green-light`, containing `CircleCheck` Lucide icon 32, color `--accent-green`. Title 18/600 `--font-primary` "Mercado Pago conectado", centered.
+- Definition list, vertical gap `--spacing-sm` (8), divided rows (`--border-light` 1px between rows):
+  | Field | Source | Render |
+  |---|---|---|
+  | Conta | `mp_user_id` | 14/500 `--font-primary` |
+  | Modo | `live_mode` | `<Badge variant="green">Produção</Badge>` when `true`, `<Badge variant="yellow">Teste</Badge>` when `false` |
+  | Conectado em | `connected_at` | 14/normal `--font-primary`, formatted via `formatDateTime` from `@/lib/format` |
+  | Token expira em | `token_expires_at` | 14/normal `--font-primary`, formatted via `formatDateTime`. Informational only — refresh is automatic on the backend. |
+- Each row: label 12/500 `--font-secondary` UPPERCASE on the left, value on the right (right-aligned), padding-y `--spacing-sm` (8).
+- Footer: `<Button variant="red">` "Desconectar" with leading `Unlink` icon 20, full-width. Opens a confirmation modal.
+
+**Sub-view: Disconnect confirmation modal.**
+- Standard `<Modal size="sm">`, title "Desconectar Mercado Pago".
+- Body 14/normal `--font-secondary`: "O bot deixará de gerar Pix automaticamente até você reconectar. Deseja continuar?".
+- Footer: `<Button variant="secondary">` "Cancelar" + `<Button variant="red" loading>` "Desconectar".
+
+**Sub-view: Fetch error (status endpoint failed).**
+- Centered column, vertical gap `--spacing-md` (16), text-align center, padding-y `--spacing-lg` (24).
+- Round badge 56×56, radius `--radius-full`, fill `--error-50`, containing `CircleAlert` Lucide icon 32, color `--error-500`.
+- Title 18/600 `--font-primary` "Não foi possível carregar".
+- Body 14/normal `--font-secondary` carrying the error message.
+- `<Button variant="primary">` "Tentar novamente".
+
+**Toasts after OAuth callback.** The backend redirects the browser back to `/pagamentos?status=...&reason=...`. On mount the page reads the query, fires the matching toast, then calls `router.replace("/pagamentos")` to clear it.
+
+| `status` | `reason` | Toast variant | Title |
+|---|---|---|---|
+| `connected` | — | `success` | "Mercado Pago conectado." |
+| `error` | `access_denied` | `error` | "Autorização cancelada no Mercado Pago." |
+| `error` | `invalid_state` | `error` | "Sessão de autorização expirou. Tente novamente." |
+| `error` | `invalid_query` / `missing_code_or_state` | `error` | "Resposta inválida do Mercado Pago. Tente novamente." |
+| `error` | `persistence_failed` | `error` | "Não conseguimos salvar a conexão. Tente novamente." |
+| `error` | `token_exchange_failed` / `invalid_grant` / `invalid_client` / `invalid_request` | `error` | "Falha ao validar autorização. Tente novamente." |
+| `error` | `network_error` | `error` | "Erro de rede ao confirmar autorização. Tente novamente." |
+| `error` | _any other / unknown_ | `error` | "Não foi possível conectar ao Mercado Pago. Tente novamente." |
+
+**Sidebar entry.** "Pagamentos" item with Lucide `CreditCard` 20, ordered between "Conexão" and "Configurações". Active styling follows the sidebar spec above.
+
 ---
 
 ## 9. Iconography

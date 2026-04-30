@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Clock,
   ClipboardList,
+  CreditCard,
   Home,
   LogOut,
   Settings,
@@ -40,6 +41,11 @@ const NAV_ITEMS: { label: string; icon: ReactNode; href: string }[] = [
     label: "Conexão",
     icon: <WhatsappIcon size={20} aria-hidden="true" />,
     href: "/conexao",
+  },
+  {
+    label: "Pagamentos",
+    icon: <CreditCard size={20} aria-hidden="true" />,
+    href: "/pagamentos",
   },
   {
     label: "Configurações",
