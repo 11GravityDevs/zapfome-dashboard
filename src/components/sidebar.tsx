@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -10,21 +10,42 @@ import {
   LogOut,
   Settings,
   UtensilsCrossed,
-  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
+import { WhatsappIcon } from "@/components/icons/whatsapp-icon";
 import { cn } from "@/lib/cn";
 import { useToast } from "@/contexts/toast-context";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
 
-const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
-  { label: "Início", icon: Home, href: "/" },
-  { label: "Pedidos", icon: ClipboardList, href: "/pedidos" },
-  { label: "Cardápio", icon: UtensilsCrossed, href: "/cardapio" },
-  { label: "Histórico", icon: Clock, href: "/historico" },
-  { label: "Configurações", icon: Settings, href: "/configuracoes" },
+const NAV_ITEMS: { label: string; icon: ReactNode; href: string }[] = [
+  { label: "Início", icon: <Home size={20} aria-hidden="true" />, href: "/" },
+  {
+    label: "Pedidos",
+    icon: <ClipboardList size={20} aria-hidden="true" />,
+    href: "/pedidos",
+  },
+  {
+    label: "Cardápio",
+    icon: <UtensilsCrossed size={20} aria-hidden="true" />,
+    href: "/cardapio",
+  },
+  {
+    label: "Histórico",
+    icon: <Clock size={20} aria-hidden="true" />,
+    href: "/historico",
+  },
+  {
+    label: "Conexão",
+    icon: <WhatsappIcon size={20} aria-hidden="true" />,
+    href: "/conexao",
+  },
+  {
+    label: "Configurações",
+    icon: <Settings size={20} aria-hidden="true" />,
+    href: "/configuracoes",
+  },
 ];
 
 export function Sidebar() {
@@ -60,7 +81,7 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 py-2">
         <ul className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+          {NAV_ITEMS.map(({ label, icon, href }) => {
             const active =
               href === "/"
                 ? pathname === "/"
@@ -77,7 +98,7 @@ export function Sidebar() {
                       : "text-font-sidebar hover:bg-border-dark hover:text-font-sidebar-active",
                   )}
                 >
-                  <Icon size={20} aria-hidden="true" />
+                  {icon}
                   {label}
                 </Link>
               </li>

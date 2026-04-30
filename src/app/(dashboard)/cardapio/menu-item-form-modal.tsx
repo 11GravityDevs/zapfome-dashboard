@@ -111,7 +111,9 @@ export function MenuItemFormModal({
   function validate(): FormErrors {
     const errs: FormErrors = {};
     if (!form.name.trim()) errs.name = "Nome é obrigatório.";
-    if (!form.price || Number(form.price) <= 0) errs.price = "Preço deve ser maior que zero.";
+    if (!form.allowsFlavors && (!form.price || Number(form.price) <= 0)) {
+      errs.price = "Preço deve ser maior que zero.";
+    }
     if (!form.category.trim()) errs.category = "Categoria é obrigatória.";
     if (form.allowsFlavors && (!form.maxFlavors || Number(form.maxFlavors) < 1)) {
       errs.maxFlavors = "Mínimo de 1 sabor.";

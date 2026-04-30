@@ -9,7 +9,7 @@ import { Spinner } from "@/components/spinner";
 import { useToast } from "@/contexts/toast-context";
 import { createClient } from "@/lib/supabase/client";
 
-const MAX_IMAGES = 4;
+const MAX_IMAGES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 type Props = {

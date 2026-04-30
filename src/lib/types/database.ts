@@ -30,8 +30,14 @@ export type TenantSettings = {
 export type TenantPayment = {
   id: string;
   tenant_id: string;
-  mercadopago_access_token: string;
-  mercadopago_webhook_secret: string | null;
+  mercadopago_access_token: string | null;
+  mercadopago_refresh_token: string | null;
+  mercadopago_user_id: number | null;
+  mercadopago_token_expires_at: string | null;
+  mercadopago_public_key: string | null;
+  mercadopago_live_mode: boolean | null;
+  mercadopago_scope: string | null;
+  mercadopago_connected_at: string | null;
   pix_expiration_minutes: number;
 };
 

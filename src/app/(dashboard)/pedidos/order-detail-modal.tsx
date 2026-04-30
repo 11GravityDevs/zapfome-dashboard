@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Printer } from "lucide-react";
 import { Badge, type BadgeVariant } from "@/components/badge";
@@ -8,6 +7,7 @@ import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { Spinner } from "@/components/spinner";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/table";
+import { WhatsappIcon } from "@/components/icons/whatsapp-icon";
 import { useTenant } from "@/contexts/tenant-context";
 import { useToast } from "@/contexts/toast-context";
 import { updateOrderStatus, type DashboardOrderStatus } from "@/lib/api/orders";
@@ -326,16 +326,14 @@ export function OrderDetailModal({ orderId, onClose, onOrderUpdated }: OrderDeta
                 href={getWhatsAppLink(order.customer.phone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2"
+                className="group flex items-center gap-2"
               >
-                <Image
-                  src="/whatsapp-icon.svg"
-                  alt=""
-                  width={20}
-                  height={20}
+                <WhatsappIcon
+                  size={20}
+                  aria-hidden="true"
                   className="text-whatsapp-green"
                 />
-                <span className="text-sm text-font-secondary hover:text-green-500 transition-all">
+                <span className="text-sm text-font-secondary transition-colors group-hover:text-whatsapp-green">
                   {formatPhone(order.customer.phone)}
                 </span>
               </a>

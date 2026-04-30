@@ -36,7 +36,7 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
 
   async function handleSubmit() {
     const parsedFee = (Number(feeCents) || 0) / 100;
-    if (!neighborhood.trim() || !city.trim() || parsedFee <= 0) return;
+    if (!city.trim() || parsedFee < 0) return;
 
     setSaving(true);
     try {
@@ -64,7 +64,7 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
           <Button
             onClick={handleSubmit}
             loading={saving}
-            disabled={!neighborhood.trim() || !city.trim() || !feeCents}
+            disabled={!city.trim()}
           >
             {isEditing ? "Salvar" : "Adicionar"}
           </Button>
@@ -73,7 +73,7 @@ export function ZoneModal({ open, onClose, onSave, zone }: Props) {
     >
       <div className="flex flex-col gap-(--spacing-md)">
         <Input
-          label="Bairro"
+          label="Bairro (opcional)"
           placeholder="Ex: Centro"
           maxLength={100}
           value={neighborhood}
