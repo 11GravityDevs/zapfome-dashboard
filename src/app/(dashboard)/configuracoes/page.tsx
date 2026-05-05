@@ -9,6 +9,7 @@ import { useToast } from "@/contexts/toast-context";
 import { buildDefaultBusinessHours, type BusinessHourRow } from "@/lib/constants/settings";
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryZone, TenantSettings } from "@/lib/types/database";
+import { getMenuMediaType } from "@/lib/utils/menu";
 import { toBusinessHourRows } from "@/lib/utils/settings";
 import { validateOnboardingData, hasErrors, type OnboardingErrors } from "@/lib/utils/onboarding";
 import { MenuImageSection } from "@/components/menu-image-section";
@@ -80,7 +81,7 @@ export default function ConfiguracoesPage() {
             .order("neighborhood"),
           supabase
             .from("tenant_menu_image")
-            .select("image_url")
+            .select("image_url, media_type")
             .eq("tenant_id", tenantId),
         ]);
 
@@ -221,6 +222,7 @@ export default function ConfiguracoesPage() {
               menuImageUrls.map((url) => ({
                 tenant_id: tenantId,
                 image_url: url,
+                media_type: getMenuMediaType(url),
               })),
             )
           : Promise.resolve({ error: null }),

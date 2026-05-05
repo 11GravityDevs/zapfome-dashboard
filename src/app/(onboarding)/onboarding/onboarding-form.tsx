@@ -8,6 +8,7 @@ import { useToast } from "@/contexts/toast-context";
 import { buildDefaultBusinessHours, type BusinessHourRow } from "@/lib/constants/settings";
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryZone } from "@/lib/types/database";
+import { getMenuMediaType } from "@/lib/utils/menu";
 import {
   validateOnboardingData,
   hasErrors,
@@ -108,7 +109,10 @@ export function OnboardingForm() {
           close_time: h.closeTime,
           is_closed: h.isClosed,
         })),
-        p_menu_image_urls: menuImageUrls,
+        p_menu_images: menuImageUrls.map((url) => ({
+          url,
+          media_type: getMenuMediaType(url),
+        })),
         p_delivery_zones: zones.map((z) => ({
           neighborhood: z.neighborhood,
           city: z.city,

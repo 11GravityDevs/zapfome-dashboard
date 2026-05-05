@@ -18,7 +18,7 @@ export function validateOnboardingData(
   if (!establishment.phone.trim()) errors.phone = "Preencha o telefone.";
   if (!establishment.address.trim()) errors.address = "Preencha o endereço.";
   if (!establishment.city.trim()) errors.city = "Preencha a cidade.";
-  if (menuImageUrls.length === 0) errors.menuImages = "Envie pelo menos 1 imagem do cardápio.";
+  if (menuImageUrls.length === 0) errors.menuImages = "Envie pelo menos 1 arquivo do cardápio.";
 
   return errors;
 }

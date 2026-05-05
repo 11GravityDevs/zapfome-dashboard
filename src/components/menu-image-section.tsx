@@ -2,15 +2,17 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { ImageIcon, Plus, Trash } from "lucide-react";
+import { FileText, ImageIcon, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 import { Spinner } from "@/components/spinner";
 import { useToast } from "@/contexts/toast-context";
 import { createClient } from "@/lib/supabase/client";
+import { getFileNameFromUrl, getMenuMediaType } from "@/lib/utils/menu";
 
-const MAX_IMAGES = 10;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILES = 10;
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const ACCEPTED_TYPES = "image/*,application/pdf";
 
 type Props = {
   imageUrls: string[];
@@ -28,19 +30,27 @@ export function MenuImageSection({ imageUrls, onChange, uploading, onUploadingCh
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const remaining = MAX_IMAGES - imageUrls.length;
+    const remaining = MAX_FILES - imageUrls.length;
     if (files.length > remaining) {
       showToast({
         variant: "error",
-        title: `Você pode adicionar no máximo ${remaining} imagen${remaining === 1 ? "" : "s"}.`,
+        title: `Você pode adicionar no máximo ${remaining} arquivo${remaining === 1 ? "" : "s"}.`,
       });
       resetInput();
       return;
     }
 
     for (const file of Array.from(files)) {
+      if (!isAcceptedType(file)) {
+        showToast({
+          variant: "error",
+          title: `"${file.name}" não é um formato suportado. Envie imagens ou PDF.`,
+        });
+        resetInput();
+        return;
+      }
       if (file.size > MAX_FILE_SIZE) {
-        showToast({ variant: "error", title: `"${file.name}" excede o limite de 5 MB.` });
+        showToast({ variant: "error", title: `"${file.name}" excede o limite de 100 MB.` });
         resetInput();
         return;
       }
@@ -79,7 +89,7 @@ export function MenuImageSection({ imageUrls, onChange, uploading, onUploadingCh
         onChange([...imageUrls, ...newUrls]);
       }
     } catch {
-      showToast({ variant: "error", title: "Erro ao enviar imagens. Tente novamente." });
+      showToast({ variant: "error", title: "Erro ao enviar arquivos. Tente novamente." });
     } finally {
       onUploadingChange(false);
       resetInput();
@@ -98,36 +108,54 @@ export function MenuImageSection({ imageUrls, onChange, uploading, onUploadingCh
     <Card>
       <div className="flex items-center gap-(--spacing-sm) mb-(--spacing-xs)">
         <ImageIcon size={20} className="text-brand-primary" />
-        <h2 className="text-lg font-semibold text-font-primary">Imagens do cardápio</h2>
+        <h2 className="text-lg font-semibold text-font-primary">Arquivos do cardápio</h2>
       </div>
 
       <p className="text-sm text-font-secondary mb-(--spacing-md)">
-        Envie até {MAX_IMAGES} fotos do seu cardápio. Mínimo 1 imagem.
+        Envie até {MAX_FILES} fotos ou PDFs do seu cardápio. Mínimo 1 arquivo. Tamanho máximo: 100 MB por arquivo.
       </p>
 
       {imageUrls.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-(--spacing-md) mb-(--spacing-md)">
-          {imageUrls.map((url, i) => (
-            <div key={url} className="relative aspect-square rounded-md border border-border overflow-hidden">
-              <Image src={url} alt={`Cardápio ${i + 1}`} fill className="object-cover" unoptimized />
-              <Button
-                variant="red"
-                size="sm"
-                className="absolute top-1 right-1 size-6! min-w-0! p-0! rounded-sm!"
-                aria-label={`Remover imagem ${i + 1}`}
-                onClick={() => removeImage(i)}
-              >
-                <Trash size={14} />
-              </Button>
-            </div>
-          ))}
+          {imageUrls.map((url, i) => {
+            const isPdf = getMenuMediaType(url) === "pdf";
+            return (
+              <div key={url} className="relative aspect-square rounded-md border border-border overflow-hidden">
+                {isPdf ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-(--spacing-xs) bg-bg-secondary p-(--spacing-sm) hover:bg-bg-hover transition-colors"
+                    aria-label={`Abrir ${getFileNameFromUrl(url)}`}
+                  >
+                    <FileText size={48} className="text-brand-primary" />
+                    <span className="text-xs text-font-secondary truncate max-w-full">
+                      {getFileNameFromUrl(url)}
+                    </span>
+                  </a>
+                ) : (
+                  <Image src={url} alt={`Imagem do cardápio ${i + 1}`} fill className="object-cover" unoptimized />
+                )}
+                <Button
+                  variant="red"
+                  size="sm"
+                  className="absolute top-1 right-1 size-8! min-w-0! p-0!"
+                  aria-label={`Remover arquivo ${i + 1}`}
+                  onClick={() => removeImage(i)}
+                >
+                  <Trash size={14} />
+                </Button>
+              </div>
+            );
+          })}
         </div>
       )}
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPTED_TYPES}
         multiple
         className="hidden"
         onChange={handleFiles}
@@ -138,10 +166,10 @@ export function MenuImageSection({ imageUrls, onChange, uploading, onUploadingCh
           variant="secondary"
           size="sm"
           leadingIcon={<Plus size={16} />}
-          disabled={imageUrls.length >= MAX_IMAGES || uploading}
+          disabled={imageUrls.length >= MAX_FILES || uploading}
           onClick={() => fileInputRef.current?.click()}
         >
-          Adicionar imagem
+          Adicionar arquivo
         </Button>
 
         {uploading && <Spinner size="sm" />}
@@ -150,4 +178,8 @@ export function MenuImageSection({ imageUrls, onChange, uploading, onUploadingCh
       {error && <p data-field-error className="text-xs font-medium text-accent-red mt-(--spacing-xs)">{error}</p>}
     </Card>
   );
+}
+
+function isAcceptedType(file: File): boolean {
+  return file.type.startsWith("image/") || file.type === "application/pdf";
 }

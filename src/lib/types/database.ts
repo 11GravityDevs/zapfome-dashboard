@@ -45,6 +45,7 @@ export type TenantMenuImage = {
   id: string;
   tenant_id: string;
   image_url: string;
+  media_type: "image" | "pdf";
 };
 
 export type BusinessHours = {
