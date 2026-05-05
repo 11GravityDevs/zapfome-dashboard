@@ -126,8 +126,8 @@ export function DeliveryZonesSection({ tenantId, zones, onZonesChange }: Props) 
       showToast({
         variant: newValue ? "success" : "warning",
         title: newValue
-          ? `Zona "${zone.neighborhood}" ativada.`
-          : `Zona "${zone.neighborhood}" desativada.`,
+          ? `Zona ${zone.neighborhood ?? ''} ativada.`
+          : `Zona ${zone.neighborhood ?? ''} desativada.`,
       });
     } catch (err) {
       console.error("[DeliveryZones] Unexpected toggle error:", err);

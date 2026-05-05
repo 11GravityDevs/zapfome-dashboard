@@ -1,6 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -43,7 +52,11 @@ export function Select({
 
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [position, setPosition] = useState<{ top: number; left: number; width: number } | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   const selectedOption = options.find((o) => o.value === value);
@@ -52,15 +65,42 @@ export function Select({
   const close = useCallback(() => {
     setOpen(false);
     setFocusedIndex(-1);
+    setPosition(null);
   }, []);
+
+  const updatePosition = useCallback(() => {
+    const btn = buttonRef.current;
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updatePosition();
+  }, [open, updatePosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onScrollOrResize() {
+      updatePosition();
+    }
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [open, updatePosition]);
 
   useEffect(() => {
     if (!open) return;
 
     function onClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        close();
-      }
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      if (listRef.current?.contains(target)) return;
+      close();
     }
 
     document.addEventListener("mousedown", onClickOutside);
@@ -141,6 +181,7 @@ export function Select({
 
       <div className="relative">
         <button
+          ref={buttonRef}
           type="button"
           id={selectId}
           role="combobox"
@@ -185,13 +226,24 @@ export function Select({
           />
         </button>
 
-        {open && (
+      </div>
+
+      {open &&
+        position &&
+        typeof document !== "undefined" &&
+        createPortal(
           <ul
             ref={listRef}
             id={listboxId}
             role="listbox"
             aria-labelledby={label ? `${selectId}-label` : selectId}
-            className="absolute left-0 z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-bg-card shadow-card"
+            style={{
+              position: "fixed",
+              top: position.top,
+              left: position.left,
+              width: position.width,
+            }}
+            className="z-50 max-h-60 overflow-auto rounded-md border border-border bg-bg-card shadow-card"
           >
             {options.map((opt, index) => {
               const isSelected = opt.value === value;
@@ -216,9 +268,9 @@ export function Select({
                 </li>
               );
             })}
-          </ul>
+          </ul>,
+          document.body,
         )}
-      </div>
 
       {error ? (
         <p id={`${selectId}-error`} className="text-xs font-medium text-accent-red">

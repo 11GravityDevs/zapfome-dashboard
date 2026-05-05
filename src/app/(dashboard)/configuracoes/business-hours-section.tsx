@@ -19,20 +19,7 @@ export function BusinessHoursSection({ hours, onChange, tenantId, onToggleSaved 
   const { showToast } = useToast();
 
   function updateRow(index: number, patch: Partial<BusinessHourRow>) {
-    const next = hours.map((row, i) => {
-      if (i !== index) return row;
-      const updated = { ...row, ...patch };
-      if (!updated.isClosed && updated.closeTime <= updated.openTime) {
-        if (patch.openTime !== undefined) {
-          const openIdx = TIME_OPTIONS.findIndex((o) => o.value === updated.openTime);
-          updated.closeTime = TIME_OPTIONS[Math.min(openIdx + 1, TIME_OPTIONS.length - 1)].value;
-        } else {
-          const closeIdx = TIME_OPTIONS.findIndex((o) => o.value === updated.closeTime);
-          updated.openTime = TIME_OPTIONS[Math.max(closeIdx - 1, 0)].value;
-        }
-      }
-      return updated;
-    });
+    const next = hours.map((row, i) => (i === index ? { ...row, ...patch } : row));
     onChange(next);
   }
 
