@@ -6,6 +6,7 @@ import { Rocket } from "lucide-react";
 import { Button } from "@/components/button";
 import { useToast } from "@/contexts/toast-context";
 import { buildDefaultBusinessHours, type BusinessHourRow } from "@/lib/constants/settings";
+import { provisionOnboarding } from "@/lib/api/onboarding";
 import { createClient } from "@/lib/supabase/client";
 import type { DeliveryZone } from "@/lib/types/database";
 import { getMenuMediaType } from "@/lib/utils/menu";
@@ -123,6 +124,17 @@ export function OnboardingForm() {
       if (error) {
         console.error("[Onboarding] RPC error:", error);
         showToast({ variant: "error", title: "Erro ao criar estabelecimento. Tente novamente." });
+        return;
+      }
+
+      try {
+        await provisionOnboarding();
+      } catch (provisionError) {
+        console.error("[Onboarding] Provision error:", provisionError);
+        showToast({
+          variant: "error",
+          title: "Erro ao provisionar conexão com WhatsApp. Tente novamente.",
+        });
         return;
       }
 

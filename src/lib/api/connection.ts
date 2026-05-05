@@ -35,8 +35,7 @@ export async function fetchOnboarding(): Promise<OnboardingResponse> {
     throw err;
   }
 
-  const res = await fetch(`${backendUrl}/api/dashboard/onboarding`, {
-    method: "POST",
+  const res = await fetch(`${backendUrl}/api/dashboard/whatsapp/connection`, {
     headers: {
       Authorization: `Bearer ${session.access_token}`,
     },
