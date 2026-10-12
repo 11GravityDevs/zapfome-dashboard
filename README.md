@@ -14,7 +14,6 @@
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3FCF8E?logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
 
 ---
@@ -31,19 +30,11 @@ The WhatsApp bot lives in a separate service (`zapfome-backend`). Both projects 
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/dashboard-home.webp" alt="Dashboard home with KPIs and top products" width="400"/></td>
     <td><img src="docs/screenshots/orders-kanban.webp" alt="Orders Kanban board" width="400"/></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Dashboard home</sub></td>
-    <td align="center"><sub>Orders Kanban</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/order-detail.webp" alt="Order detail modal" width="400"/></td>
     <td><img src="docs/screenshots/order-history.webp" alt="Order history table" width="400"/></td>
   </tr>
   <tr>
-    <td align="center"><sub>Order detail</sub></td>
+    <td align="center"><sub>Orders Kanban</sub></td>
     <td align="center"><sub>Order history</sub></td>
   </tr>
   <tr>
@@ -67,6 +58,24 @@ The WhatsApp bot lives in a separate service (`zapfome-backend`). Both projects 
 - **Payments**: connect or disconnect a Mercado Pago account to accept Pix payments through the bot.
 - **Connection**: pair the restaurant's WhatsApp number with the bot via QR code or pairing code.
 
+## How it works
+
+```
+Customer messages the restaurant on WhatsApp
+                    |
+     Bot (zapfome-backend) takes the order   ->  Pix payment via Mercado Pago
+                    |
+        Order saved to Supabase (per tenant)
+                    |
+   Dashboard polls every 15s  ->  Orders Kanban
+                    |
+     Staff advances the order status
+                    |
+   Backend notifies the customer on WhatsApp
+```
+
+The bot and the dashboard are two independent apps that share one Supabase database. The bot owns the conversation with the customer; the dashboard owns everything the restaurant staff sees and edits. The dashboard only calls the bot's API when an action has to reach the customer or an external provider.
+
 ## Tech stack
 
 | Layer           | Technology                                                                |
@@ -84,7 +93,7 @@ The WhatsApp bot lives in a separate service (`zapfome-backend`). Both projects 
 - **Auth.** Supabase Auth (email and password) with the session kept in cookies via `@supabase/ssr`. Route protection runs in `src/proxy.ts` (the Next.js 16 replacement for middleware).
 - **No API layer in this repo.** The dashboard talks to Supabase directly for reads and ordinary writes. The only calls to `zapfome-backend` are actions that must go through the bot: onboarding provisioning, order status transitions that send a WhatsApp message, the Mercado Pago OAuth handshake, and WhatsApp pairing. Each one is authenticated with the user's own Supabase session token.
 - **Near real-time updates.** The orders board polls on an interval instead of using Supabase Realtime, which keeps the architecture simple for now.
-- **Design system.** All tokens (color, spacing, radii, type scale) are documented in [docs/design-system.md](docs/design-system.md) and implemented as CSS custom properties in `src/app/globals.css`. Nothing in the UI hardcodes a color or spacing value.
+- **Deployment.** `next.config.ts` uses `output: "standalone"`, and the included multi-stage `Dockerfile` (Node 22 Alpine, non-root user) packages that build into a small production image listening on port 3000.
 
 ## Project structure
 
@@ -139,18 +148,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Command             | Description                   |
-| ------------------- | ----------------------------- |
-| `yarn dev`          | Start the development server  |
-| `yarn build`        | Production build (standalone) |
-| `yarn start`        | Serve the production build    |
-| `yarn lint`         | Run ESLint                    |
-| `yarn typecheck`    | Type-check with `tsc`         |
-| `yarn format`       | Format with Prettier          |
+| Command             | Description                    |
+| ------------------- | ------------------------------ |
+| `yarn dev`          | Start the development server   |
+| `yarn build`        | Production build (standalone)  |
+| `yarn start`        | Serve the production build     |
+| `yarn lint`         | Run ESLint                     |
+| `yarn typecheck`    | Type-check with `tsc`          |
+| `yarn format`       | Format with Prettier           |
+| `yarn format:check` | Check formatting with Prettier |
 
-## Deployment
+## Code quality
 
-`next.config.ts` uses `output: "standalone"`, and the included multi-stage `Dockerfile` (Node 22 Alpine, non-root user) packages that build into a small production image listening on port 3000.
+TypeScript runs in strict mode, ESLint uses the Next.js flat config, and Prettier keeps formatting consistent. The UI follows a token-based design system: color, spacing, radii, and type scale are documented in [docs/design-system.md](docs/design-system.md) and implemented as CSS custom properties in `src/app/globals.css`, so nothing in the UI hardcodes a color or spacing value.
 
 ## License
 
