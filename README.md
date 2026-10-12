@@ -27,6 +27,35 @@ This repository is the **dashboard**, not the bot. It is a multi-tenant Next.js 
 
 The WhatsApp bot lives in a separate service (`zapfome-backend`). Both projects share the same Supabase database: the dashboard reads and writes tenant data directly and only calls the backend for the few actions that must trigger a WhatsApp message or an external OAuth flow (see [Architecture](#architecture)).
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/dashboard-home.webp" alt="Dashboard home with KPIs and top products" width="400"/></td>
+    <td><img src="docs/screenshots/orders-kanban.webp" alt="Orders Kanban board" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Dashboard home</sub></td>
+    <td align="center"><sub>Orders Kanban</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/order-detail.webp" alt="Order detail modal" width="400"/></td>
+    <td><img src="docs/screenshots/order-history.webp" alt="Order history table" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Order detail</sub></td>
+    <td align="center"><sub>Order history</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/menu-management.webp" alt="Menu management with flavors" width="400"/></td>
+    <td><img src="docs/screenshots/menu-item-form.webp" alt="New menu item form" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Menu management</sub></td>
+    <td align="center"><sub>Menu item form</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Onboarding**: a new owner signs up, registers the establishment, and gets a WhatsApp connection provisioned in a single flow.
